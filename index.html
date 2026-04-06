@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NovaTech - Sistema de Tickets con IA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .tab-active { border-bottom: 3px solid #3b82f6; color: #3b82f6; font-weight: 600; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .ticket-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .ticket-card { transition: all 0.2s; }
+        .pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 text-white rounded-lg p-2 text-xl">T</div>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800">NovaTech Tickets</h1>
+                    <p class="text-xs text-gray-500">Sistema Inteligente de Soporte con IA</p>
+                </div>
+            </div>
+            <span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">IA Activa</span>
+        </div>
+    </header>
+    <nav class="bg-white border-b">
+        <div class="max-w-7xl mx-auto px-4 flex gap-6">
+            <button onclick="showTab('nuevo')" id="tab-nuevo" class="py-3 px-1 text-sm tab-active">Nuevo Ticket</button>
+            <button onclick="showTab('tickets')" id="tab-tickets" class="py-3 px-1 text-sm text-gray-500 hover:text-gray-700">Tickets</button>
+            <button onclick="showTab('dashboard')" id="tab-dashboard" class="py-3 px-1 text-sm text-gray-500 hover:text-gray-700">Dashboard</button>
+        </div>
+    </nav>
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        <div id="page-nuevo" class="fade-in">
+            <div class="bg-white rounded-xl shadow-sm border p-6 max-w-3xl mx-auto">
+                <h2 class="text-lg font-semibold mb-1">Crear Nuevo Ticket</h2>
+                <p class="text-sm text-gray-500 mb-6">Simula un email entrante a soporte@novatech.com</p>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">De (email)</label><input id="email" type="email" placeholder="nombre@novatech.com" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Departamento</label><select id="depto" class="w-full border rounded-lg px-3 py-2 text-sm outline-none"><option>Desarrollo</option><option>Infraestructura</option><option>Operaciones</option><option>Ventas</option><option>Administracion</option><option>RRHH</option><option>Direccion</option><option>QA</option><option>Diseno</option></select></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Oficina</label><select id="oficina" class="w-full border rounded-lg px-3 py-2 text-sm outline-none"><option>Monterrey</option><option>Guadalajara</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Asunto</label><input id="asunto" type="text" placeholder="No puedo conectarme a la VPN" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                </div>
+                <div class="mb-4"><label class="block text-sm font-medium text-gray-700 mb-1">Descripcion del problema</label><textarea id="cuerpo" rows="4" placeholder="Describe tu problema..." class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea></div>
+                <button onclick="submitTicket()" class="w-full bg-blue-600 text-white rounded-lg py-2.5 font-medium hover:bg-blue-700 transition">Enviar Ticket</button>
+            </div>
+            <div id="resultado" class="hidden mt-6 max-w-3xl mx-auto fade-in"></div>
+        </div>
+        <div id="page-tickets" class="hidden fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold">Todos los Tickets</h2>
+                <button onclick="loadDemo()" class="bg-purple-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-purple-700 transition">Cargar Demo</button>
+            </div>
+            <div id="ticket-list"></div>
+            <p id="no-tickets" class="text-center text-gray-400 py-12">No hay tickets. Crea uno o carga demo.</p>
+        </div>
+        <div id="page-dashboard" class="hidden fade-in">
+            <h2 class="text-lg font-semibold mb-4">Dashboard de Metricas</h2>
+            <div id="dashboard-empty" class="text-center text-gray-400 py-12">Carga los datos demo para ver metricas.</div>
+            <div id="dashboard-content" class="hidden">
+                <div class="grid grid-cols-4 gap-4 mb-6" id="kpis"></div>
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white rounded-xl shadow-sm border p-4"><h3 class="text-sm font-semibold mb-3">Tickets por Categoria</h3><canvas id="chartCat"></canvas></div>
+                    <div class="bg-white rounded-xl shadow-sm border p-4"><h3 class="text-sm font-semibold mb-3">Resolucion: IA vs Humano</h3><canvas id="chartRes"></canvas></div>
+                </div>
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl shadow-sm border p-4"><h3 class="text-sm font-semibold mb-3">Tickets por Prioridad</h3><canvas id="chartPri"></canvas></div>
+                    <div class="bg-white rounded-xl shadow-sm border p-4"><h3 class="text-sm font-semibold mb-3">Tickets por Oficina</h3><canvas id="chartOfi"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </main>
+<script>
+let tickets=[];
+let chartInstances={};
+const KB={
+    password:{title:"Reset de Contrasena - Google Workspace",solution:"Pasos para restablecer tu contrasena:\n1. Ve a accounts.google.com\n2. Clic en Olvidaste tu contrasena\n3. Ingresa tu correo @novatech.com\n4. Selecciona metodo de recuperacion\n5. Crea nueva contrasena (min 8 caracteres)\n\nSi no funciona, un agente desbloqueara tu cuenta.\nTiempo estimado: 5 minutos"},
+    vpn:{title:"Configuracion y Troubleshooting de VPN",solution:"Si no puedes conectarte a la VPN:\n1. Verifica tu conexion a internet\n2. Reinicia el cliente VPN\n3. Verifica credenciales (usuario Google Workspace)\n4. Windows: Configuracion - Red - VPN - Perfil NovaTech\n5. Si sigue fallando, reinicia tu computadora\n\nServidor: vpn.novatech.com | Tipo: IKEv2\nTiempo estimado: 10 minutos"},
+    software:{title:"Instalacion de Software Aprobado",solution:"Software sin aprobacion: Chrome, Slack, Zoom, VS Code, Postman, Figma, Office 365, Notion, Docker.\n\n1. Descarga desde sitio oficial\n2. Ejecuta el instalador\n3. Si pide permisos elevados, contacta TI\n\nSoftware fuera de lista: requiere aprobacion de Patricia Vega.\nTiempo de aprobacion: 1-3 dias habiles"},
+    printer:{title:"Problemas Comunes de Impresora",solution:"Troubleshooting basico:\n1. Verifica que este encendida y en red\n2. Reinicia cola de impresion: Servicios - Print Spooler - Reiniciar\n3. Verifica papel y toner\n4. Reinstala el driver desde la intranet\n\nTiempo estimado: 15 minutos"}
+};
+const SENSITIVE_KW=["acoso","hostigamiento","discriminacion","denuncia","abuso","discapacidad","adaptacion","embarazo","despido","amenaza","violencia","sexual","intimidacion","mobbing","represalia"];
+function isSensitive(t){const l=t.toLowerCase();return SENSITIVE_KW.some(k=>l.includes(k))}
+function classifyLocal(s,b){
+    const t=(s+" "+b).toLowerCase();
+    if(["servidor caido","servidor de produccion","se cayo","brecha de seguridad","hackearon"].some(k=>t.includes(k)))return{categoria:"Servidor/Infraestructura",prioridad:"Critica",confianza:95,auto_resolvable:false,emoji_cat:"SRV",emoji_pri:"CRIT"};
+    if(["contrasena","password","clave","no puedo entrar","acceso bloqueado","login"].some(k=>t.includes(k)))return{categoria:"Reset de Contrasenas",prioridad:"Baja",confianza:90,auto_resolvable:true,kb_key:"password",emoji_cat:"KEY",emoji_pri:"LOW"};
+    if(["vpn","conectividad","red","internet","wifi","conexion"].some(k=>t.includes(k)))return{categoria:"VPN / Conectividad",prioridad:"Media",confianza:85,auto_resolvable:true,kb_key:"vpn",emoji_cat:"NET",emoji_pri:"MED"};
+    if(["instalar","software","programa","aplicacion","actualizar"].some(k=>t.includes(k)))return{categoria:"Software",prioridad:"Media",confianza:80,auto_resolvable:true,kb_key:"software",emoji_cat:"SW",emoji_pri:"MED"};
+    if(["permiso","acceso","carpeta","compartir","drive","folder"].some(k=>t.includes(k)))return{categoria:"Permisos de Acceso",prioridad:"Media",confianza:80,auto_resolvable:false,emoji_cat:"LOCK",emoji_pri:"MED"};
+    if(["mouse","teclado","monitor","pantalla","hardware","cable"].some(k=>t.includes(k)))return{categoria:"Hardware",prioridad:"Baja",confianza:85,auto_resolvable:false,emoji_cat:"HW",emoji_pri:"LOW"};
+    if(["impresora","imprimir","impresion","escaner"].some(k=>t.includes(k)))return{categoria:"Impresoras",prioridad:"Baja",confianza:80,auto_resolvable:true,kb_key:"printer",emoji_cat:"PRT",emoji_pri:"LOW"};
+    return{categoria:"Otros",prioridad:"Media",confianza:50,auto_resolvable:false,emoji_cat:"OTR",emoji_pri:"MED"};
+}
+async function classify(s,b){
+    try{const r=await fetch('/api/classify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject:s,body:b})});if(r.ok)return await r.json()}catch(e){}
+    return classifyLocal(s,b);
+}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function submitTicket(){
+    const email=document.getElementById('email').value;
+    const depto=document.getElementById('depto').value;
+    const oficina=document.getElementById('oficina').value;
+    const asunto=document.getElementById('asunto').value;
+    const cuerpo=document.getElementById('cuerpo').value;
+    if(!email||!asunto||!cuerpo){alert('Completa todos los campos');return}
+    const resultDiv=document.getElementById('resultado');
+    resultDiv.className='mt-6 max-w-3xl mx-auto fade-in';
+    resultDiv.textContent='';
+    const loadingDiv=document.createElement('div');
+    loadingDiv.className='bg-white rounded-xl shadow-sm border p-6 text-center';
+    loadingDiv.textContent='La IA esta analizando tu ticket...';
+    resultDiv.appendChild(loadingDiv);
+    const fullText=asunto+" "+cuerpo;
+    const sensitive=isSensitive(fullText);
+    const classifyPromise=sensitive?Promise.resolve({categoria:"RRHH - CONFIDENCIAL",prioridad:"Critica",confianza:99,auto_resolvable:false,sensible:true,emoji_cat:"HR",emoji_pri:"CRIT"}):classify(asunto,cuerpo);
+    classifyPromise.then(function(cls){
+        if(!cls.sensible)cls.sensible=sensitive;
+        let estado,resultHTML;
+        if(sensitive){
+            estado="Derivado a RRHH";
+            const wrapper=document.createElement('div');wrapper.className='bg-red-50 border border-red-200 rounded-xl p-6';
+            const h=document.createElement('h3');h.className='text-red-700 font-semibold text-lg mb-2';h.textContent='Contenido sensible detectado';wrapper.appendChild(h);
+            const p=document.createElement('p');p.className='text-red-600';p.textContent='Este ticket ha sido derivado directamente a Recursos Humanos de forma confidencial. Ningun agente de TI tendra acceso.';wrapper.appendChild(p);
+            resultHTML=wrapper;
+        }else if(cls.auto_resolvable&&cls.kb_key&&KB[cls.kb_key]){
+            estado="Resuelto (Auto)";
+            const kb=KB[cls.kb_key];
+            const wrapper=document.createElement('div');wrapper.className='bg-green-50 border border-green-200 rounded-xl p-6';
+            const h=document.createElement('h3');h.className='text-green-700 font-semibold text-lg mb-2';h.textContent='Respuesta Automatica';wrapper.appendChild(h);
+            const t=document.createElement('h4');t.className='font-medium text-green-800 mb-3';t.textContent=kb.title;wrapper.appendChild(t);
+            const sol=document.createElement('pre');sol.className='text-sm text-green-900 mb-4 whitespace-pre-wrap font-sans';sol.textContent=kb.solution;wrapper.appendChild(sol);
+            const info=document.createElement('div');info.className='bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700';info.textContent='Si esta solucion no funciona, responde a este correo y un agente humano te atendera.';wrapper.appendChild(info);
+            resultHTML=wrapper;
+        }else if(cls.prioridad==="Critica"){
+            estado="Escalado a Marcos";
+            const wrapper=document.createElement('div');wrapper.className='bg-red-50 border border-red-200 rounded-xl p-6';
+            const h=document.createElement('h3');h.className='text-red-700 font-semibold text-lg mb-2';h.textContent='TICKET CRITICO';wrapper.appendChild(h);
+            const p=document.createElement('p');p.className='text-red-600';p.textContent='Escalado inmediatamente a Marcos Solis y Ricardo Mendez.';wrapper.appendChild(p);
+            resultHTML=wrapper;
+        }else{
+            estado="En cola";
+            const wrapper=document.createElement('div');wrapper.className='bg-yellow-50 border border-yellow-200 rounded-xl p-6';
+            const h=document.createElement('h3');h.className='text-yellow-700 font-semibold text-lg mb-2';h.textContent='Ticket Registrado';wrapper.appendChild(h);
+            const p=document.createElement('p');p.className='text-yellow-600';p.textContent='Asignado a un agente de TI. Prioridad: '+cls.prioridad;wrapper.appendChild(p);
+            resultHTML=wrapper;
+        }
+        const ticket={id:"TK-"+String(tickets.length+1).padStart(3,'0'),fecha:new Date().toLocaleString('es-MX'),email:email,depto:depto,oficina:oficina,asunto:asunto,cuerpo:cuerpo,clasificacion:cls,estado:estado,sensible:sensitive,auto:estado.includes('Auto')};
+        tickets.push(ticket);
+        resultDiv.textContent='';
+        resultDiv.appendChild(resultHTML);
+        const metrics=document.createElement('div');metrics.className='bg-white rounded-xl shadow-sm border p-4 mt-4 grid grid-cols-3 gap-4 text-center';
+        const m1=document.createElement('div');m1.innerHTML='<p class="text-xs text-gray-500">Categoria</p><p class="font-semibold">'+esc(cls.categoria)+'</p>';
+        const m2=document.createElement('div');m2.innerHTML='<p class="text-xs text-gray-500">Prioridad</p><p class="font-semibold">'+esc(cls.prioridad)+'</p>';
+        const m3=document.createElement('div');m3.innerHTML='<p class="text-xs text-gray-500">Confianza IA</p><p class="font-semibold">'+cls.confianza+'%</p>';
+        metrics.appendChild(m1);metrics.appendChild(m2);metrics.appendChild(m3);
+        resultDiv.appendChild(metrics);
+        document.getElementById('email').value='';document.getElementById('asunto').value='';document.getElementById('cuerpo').value='';
+        renderTickets();renderDashboard();
+    });
+}
+function loadDemo(){
+    tickets=[
+        {id:"TK-001",fecha:"04/04/2026 09:15",email:"carlos.ruiz@novatech.com",depto:"Ventas",oficina:"Guadalajara",asunto:"No puedo entrar a mi correo",cuerpo:"Desde ayer no puedo acceder a mi correo, creo que se me olvido la contrasena.",clasificacion:{categoria:"Reset de Contrasenas",prioridad:"Baja",confianza:92,auto_resolvable:true,kb_key:"password",emoji_cat:"KEY",emoji_pri:"LOW"},estado:"Resuelto (Auto)",sensible:false,auto:true},
+        {id:"TK-002",fecha:"05/04/2026 10:30",email:"ana.lopez@novatech.com",depto:"Administracion",oficina:"Guadalajara",asunto:"La VPN no conecta desde casa",cuerpo:"Intentando conectarme a la VPN desde home office, da error de timeout.",clasificacion:{categoria:"VPN / Conectividad",prioridad:"Media",confianza:88,auto_resolvable:true,kb_key:"vpn",emoji_cat:"NET",emoji_pri:"MED"},estado:"Resuelto (Auto)",sensible:false,auto:true},
+        {id:"TK-003",fecha:"06/04/2026 11:00",email:"roberto.diaz@novatech.com",depto:"Desarrollo",oficina:"Monterrey",asunto:"Se cayo el servidor de staging",cuerpo:"El servidor de staging no responde. No podemos deployar. Entrega manana.",clasificacion:{categoria:"Servidor/Infraestructura",prioridad:"Critica",confianza:96,auto_resolvable:false,emoji_cat:"SRV",emoji_pri:"CRIT"},estado:"Escalado a Marcos",sensible:false,auto:false},
+        {id:"TK-004",fecha:"06/04/2026 13:20",email:"laura.martinez@novatech.com",depto:"Diseno",oficina:"Monterrey",asunto:"Necesito acceso a carpeta de assets",cuerpo:"Me cambiaron de proyecto y necesito acceso a la carpeta compartida de Drive.",clasificacion:{categoria:"Permisos de Acceso",prioridad:"Media",confianza:85,auto_resolvable:false,emoji_cat:"LOCK",emoji_pri:"MED"},estado:"Esperando aprobacion",sensible:false,auto:false},
+        {id:"TK-005",fecha:"06/04/2026 14:45",email:"maria.garcia@novatech.com",depto:"QA",oficina:"Monterrey",asunto:"Quiero instalar Postman",cuerpo:"Necesito Postman para testing de APIs.",clasificacion:{categoria:"Software",prioridad:"Baja",confianza:90,auto_resolvable:true,kb_key:"software",emoji_cat:"SW",emoji_pri:"LOW"},estado:"Resuelto (Auto)",sensible:false,auto:true},
+        {id:"TK-006",fecha:"06/04/2026 15:30",email:"anonimo@novatech.com",depto:"---",oficina:"---",asunto:"Situacion personal delicada",cuerpo:"Necesito reportar una situacion de hostigamiento.",clasificacion:{categoria:"RRHH - CONFIDENCIAL",prioridad:"Critica",confianza:99,auto_resolvable:false,emoji_cat:"HR",emoji_pri:"CRIT"},estado:"Derivado a RRHH",sensible:true,auto:false},
+        {id:"TK-007",fecha:"06/04/2026 08:10",email:"pedro.sanchez@novatech.com",depto:"Desarrollo",oficina:"Monterrey",asunto:"Mi mouse dejo de funcionar",cuerpo:"El mouse inalambrico no responde, cambie pilas y sigue igual.",clasificacion:{categoria:"Hardware",prioridad:"Baja",confianza:88,auto_resolvable:false,emoji_cat:"HW",emoji_pri:"LOW"},estado:"En cola",sensible:false,auto:false},
+        {id:"TK-008",fecha:"06/04/2026 09:00",email:"sofia.torres@novatech.com",depto:"Operaciones",oficina:"Monterrey",asunto:"La impresora del 3er piso no imprime",cuerpo:"Mande a imprimir y se quedan en cola. Ya reinicie la impresora.",clasificacion:{categoria:"Impresoras",prioridad:"Baja",confianza:82,auto_resolvable:true,kb_key:"printer",emoji_cat:"PRT",emoji_pri:"LOW"},estado:"Resuelto (Auto)",sensible:false,auto:true}
+    ];
+    renderTickets();renderDashboard();showTab('tickets');
+}
+function renderTickets(){
+    const list=document.getElementById('ticket-list');const empty=document.getElementById('no-tickets');
+    if(tickets.length===0){list.textContent='';empty.classList.remove('hidden');return}
+    empty.classList.add('hidden');list.textContent='';
+    tickets.slice().reverse().forEach(function(t){
+        const card=document.createElement('div');
+        if(t.sensible){
+            card.className='ticket-card bg-red-50 border border-red-200 rounded-xl p-4 mb-3';
+            const top=document.createElement('div');top.className='flex justify-between items-center';
+            const id=document.createElement('span');id.className='font-mono text-sm font-semibold text-red-700';id.textContent=t.id;top.appendChild(id);
+            const badge=document.createElement('span');badge.className='text-xs bg-red-200 text-red-800 px-2 py-1 rounded-full';badge.textContent='CONFIDENCIAL';top.appendChild(badge);
+            card.appendChild(top);
+            const msg=document.createElement('p');msg.className='text-sm text-red-600 mt-2';msg.textContent='Contenido oculto - Solo visible para RRHH';card.appendChild(msg);
+            const date=document.createElement('p');date.className='text-xs text-red-400 mt-1';date.textContent=t.fecha;card.appendChild(date);
+        }else{
+            card.className='ticket-card bg-white border rounded-xl p-4 mb-3';
+            const top=document.createElement('div');top.className='flex justify-between items-center mb-2';
+            const left=document.createElement('div');left.className='flex items-center gap-3';
+            const id=document.createElement('span');id.className='font-mono text-sm font-semibold';id.textContent=t.id;left.appendChild(id);
+            const priBadge=document.createElement('span');priBadge.className='text-xs bg-gray-100 px-2 py-1 rounded-full';priBadge.textContent=t.clasificacion.prioridad;left.appendChild(priBadge);
+            const catBadge=document.createElement('span');catBadge.className='text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full';catBadge.textContent=t.clasificacion.categoria;left.appendChild(catBadge);
+            top.appendChild(left);
+            const statBadge=document.createElement('span');statBadge.className='text-xs px-2 py-1 rounded-full '+(t.auto?'bg-green-100 text-green-700':'bg-blue-100 text-blue-700');statBadge.textContent=t.estado;top.appendChild(statBadge);
+            card.appendChild(top);
+            const title=document.createElement('h3');title.className='font-medium text-gray-800';title.textContent=t.asunto;card.appendChild(title);
+            const desc=document.createElement('p');desc.className='text-sm text-gray-500 mt-1';desc.textContent=t.cuerpo.substring(0,120)+(t.cuerpo.length>120?'...':'');card.appendChild(desc);
+            const meta=document.createElement('div');meta.className='flex gap-4 mt-2 text-xs text-gray-400';meta.textContent=t.email+' | '+t.depto+' | '+t.oficina+' | '+t.fecha+' | IA: '+t.clasificacion.confianza+'%';card.appendChild(meta);
+            if(t.auto&&t.clasificacion.kb_key&&KB[t.clasificacion.kb_key]){
+                const resp=document.createElement('div');resp.className='mt-3 bg-green-50 border border-green-200 rounded-lg p-3';
+                const rh=document.createElement('p');rh.className='text-xs font-semibold text-green-700 mb-1';rh.textContent='Respuesta automatica: '+KB[t.clasificacion.kb_key].title;resp.appendChild(rh);
+                const rt=document.createElement('pre');rt.className='text-xs text-green-800 whitespace-pre-wrap font-sans';rt.textContent=KB[t.clasificacion.kb_key].solution;resp.appendChild(rt);
+                card.appendChild(resp);
+            }
+        }
+        list.appendChild(card);
+    });
+}
+function renderDashboard(){
+    if(tickets.length===0){document.getElementById('dashboard-empty').classList.remove('hidden');document.getElementById('dashboard-content').classList.add('hidden');return}
+    document.getElementById('dashboard-empty').classList.add('hidden');document.getElementById('dashboard-content').classList.remove('hidden');
+    const total=tickets.length;const autoRes=tickets.filter(function(t){return t.auto}).length;const sensibles=tickets.filter(function(t){return t.sensible}).length;const escalados=total-autoRes-sensibles;
+    const kpis=document.getElementById('kpis');kpis.textContent='';
+    [{v:total,l:'Total Tickets',c:'gray'},{v:autoRes,l:'Resueltos por IA ('+Math.round(autoRes/total*100)+'%)',c:'green'},{v:escalados,l:'Escalados a Humano',c:'blue'},{v:sensibles,l:'RRHH Confidencial',c:'red'}].forEach(function(k){
+        const d=document.createElement('div');d.className='bg-white rounded-xl shadow-sm border p-4 text-center';
+        const n=document.createElement('p');n.className='text-2xl font-bold text-'+k.c+'-600';n.textContent=k.v;d.appendChild(n);
+        const lb=document.createElement('p');lb.className='text-xs text-gray-500';lb.textContent=k.l;d.appendChild(lb);
+        kpis.appendChild(d);
+    });
+    Object.values(chartInstances).forEach(function(c){c.destroy()});chartInstances={};
+    const cats={};tickets.filter(function(t){return!t.sensible}).forEach(function(t){var c=t.clasificacion.categoria;cats[c]=(cats[c]||0)+1});
+    chartInstances.cat=new Chart(document.getElementById('chartCat'),{type:'doughnut',data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats),backgroundColor:['#3b82f6','#10b981','#f59e0b','#8b5cf6','#ef4444','#6366f1','#ec4899']}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
+    chartInstances.res=new Chart(document.getElementById('chartRes'),{type:'bar',data:{labels:['IA Auto','Humano','RRHH'],datasets:[{data:[autoRes,escalados,sensibles],backgroundColor:['#10b981','#3b82f6','#ef4444']}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+    const pris={};tickets.forEach(function(t){var p=t.clasificacion.prioridad;pris[p]=(pris[p]||0)+1});
+    const priColors={Critica:'#ef4444',Alta:'#f97316',Media:'#eab308',Baja:'#22c55e'};
+    chartInstances.pri=new Chart(document.getElementById('chartPri'),{type:'doughnut',data:{labels:Object.keys(pris),datasets:[{data:Object.values(pris),backgroundColor:Object.keys(pris).map(function(k){return priColors[k]||'#6b7280'})}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
+    const ofis={};tickets.filter(function(t){return!t.sensible&&t.oficina!=='---'}).forEach(function(t){ofis[t.oficina]=(ofis[t.oficina]||0)+1});
+    chartInstances.ofi=new Chart(document.getElementById('chartOfi'),{type:'doughnut',data:{labels:Object.keys(ofis),datasets:[{data:Object.values(ofis),backgroundColor:['#3b82f6','#a855f7']}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
+}
+function showTab(name){
+    ['nuevo','tickets','dashboard'].forEach(function(t){
+        document.getElementById('page-'+t).classList.toggle('hidden',t!==name);
+        var tab=document.getElementById('tab-'+t);
+        if(t===name){tab.classList.add('tab-active');tab.classList.remove('text-gray-500')}
+        else{tab.classList.remove('tab-active');tab.classList.add('text-gray-500')}
+    });
+    if(name==='tickets')renderTickets();if(name==='dashboard')renderDashboard();
+}
+</script>
+</body>
+</html>
