@@ -271,32 +271,62 @@ tailwind.config = {
   <p id="tk-empty" class="hidden text-center py-16 text-slate-500">No hay tickets. Usa el chat o carga demo.</p>
 </section>
 
-<!-- DASHBOARD PAGE -->
+<!-- DASHBOARD PAGE — Bento Grid Layout -->
 <section id="p-dashboard" class="hidden px-8 py-6 fade">
   <div class="flex items-center gap-3 mb-1">
     <span class="material-symbols-outlined text-primary text-[28px]">dashboard</span>
     <h1 class="text-xl font-bold tracking-tight font-headline text-on-surface">Dashboard Analítico</h1>
   </div>
-  <p class="text-xs mt-1 mb-6 text-slate-400 ml-10">Métricas en tiempo real del sistema de soporte.</p>
+  <p class="text-xs mt-1 mb-5 text-slate-400 ml-10">Métricas en tiempo real del sistema de soporte.</p>
   <div id="dash-empty" class="text-center py-16 text-slate-500">Carga datos demo o crea tickets para ver métricas.</div>
   <div id="dash-content" class="hidden">
-    <div class="grid grid-cols-5 gap-4 mb-6" id="kpi-row"></div>
-    <div class="grid grid-cols-2 gap-5 mb-5">
-      <div class="card-glass glass-outline p-5 rounded-2xl"><h3 class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3">Tickets por Categoría</h3><canvas id="c-cat"></canvas></div>
-      <div class="card-glass glass-outline p-5 rounded-2xl"><h3 class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3">Tickets por Estado</h3><canvas id="c-est"></canvas></div>
-    </div>
-    <div class="grid grid-cols-5 gap-5">
-      <div class="col-span-2 card-glass glass-outline p-5 rounded-2xl">
+    <!-- Bento grid: 4 cols, auto rows ~140px -->
+    <div class="grid grid-cols-4 gap-4" style="grid-auto-rows:minmax(130px,auto);" id="bento-grid">
+      <!-- KPI: Total (tall) -->
+      <div id="kpi-total" class="card-glass glass-outline rounded-2xl p-5 flex flex-col justify-between" style="grid-row:span 2;"></div>
+      <!-- Chart: Categoría (large — 2x2) -->
+      <div class="card-glass glass-outline rounded-2xl p-5 flex flex-col" style="grid-column:span 2;grid-row:span 2;">
+        <h3 class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">Tickets por Categoría</h3>
+        <div class="flex-1 flex items-center justify-center"><canvas id="c-cat"></canvas></div>
+      </div>
+      <!-- KPI: Auto-resueltos -->
+      <div id="kpi-auto" class="card-glass glass-outline rounded-2xl p-5 flex flex-col justify-between"></div>
+      <!-- KPI: Escalados -->
+      <div id="kpi-esc" class="card-glass glass-outline rounded-2xl p-5 flex flex-col justify-between"></div>
+
+      <!-- Resolution rate ring -->
+      <div id="kpi-ring" class="card-glass glass-outline rounded-2xl p-5 flex flex-col items-center justify-center text-center" style="grid-row:span 2;">
+        <canvas id="c-ring" width="120" height="120"></canvas>
+        <div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-2">Resolución</div>
+        <div id="ring-pct" class="text-2xl font-bold text-primary mt-0.5">0%</div>
+      </div>
+
+      <!-- Chart: Estado (wide bar) -->
+      <div class="card-glass glass-outline rounded-2xl p-5 flex flex-col" style="grid-column:span 2;">
+        <h3 class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">Tickets por Estado</h3>
+        <div class="flex-1"><canvas id="c-est"></canvas></div>
+      </div>
+
+      <!-- KPI: Críticos -->
+      <div id="kpi-crit" class="card-glass glass-outline rounded-2xl p-5 flex flex-col justify-between"></div>
+
+      <!-- Issues table (tall) -->
+      <div class="card-glass glass-outline rounded-2xl p-5 flex flex-col" style="grid-row:span 2;">
         <h3 class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3 flex items-center gap-2">
-          <span class="material-symbols-outlined text-tertiary text-[16px]">local_fire_department</span> Issues Más Comunes</h3>
-        <table class="w-full text-sm"><thead><tr class="text-left text-xs text-slate-500" style="border-bottom:1px solid rgba(64,72,93,0.3);">
-          <th class="pb-2">Categoría</th><th class="pb-2 text-right">Tickets</th><th class="pb-2 text-right">%</th>
+          <span class="material-symbols-outlined text-tertiary text-[14px]">local_fire_department</span> Top Issues</h3>
+        <table class="w-full text-sm flex-1"><thead><tr class="text-left text-[10px] text-slate-500" style="border-bottom:1px solid rgba(64,72,93,0.3);">
+          <th class="pb-2">Cat.</th><th class="pb-2 text-right">#</th><th class="pb-2 text-right">%</th>
         </tr></thead><tbody id="top-issues"></tbody></table>
       </div>
-      <div class="col-span-3 card-glass glass-outline p-5 rounded-2xl">
-        <h3 class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3">Por Departamento</h3>
-        <canvas id="c-dept"></canvas>
+
+      <!-- Chart: Departamento (wide) -->
+      <div class="card-glass glass-outline rounded-2xl p-5 flex flex-col" style="grid-column:span 2;">
+        <h3 class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">Por Departamento</h3>
+        <div class="flex-1"><canvas id="c-dept"></canvas></div>
       </div>
+
+      <!-- KPI: Desde Chat -->
+      <div id="kpi-chat" class="card-glass glass-outline rounded-2xl p-5 flex flex-col justify-between"></div>
     </div>
   </div>
 </section>
@@ -707,6 +737,18 @@ function renderTickets() {
 // ============================================================
 //  DASHBOARD
 // ============================================================
+function fillKPI(id, ico, val, lbl, color, delta) {
+  var d = document.getElementById(id); d.textContent = '';
+  d.style.borderLeft = '3px solid ' + color;
+  var iconEl = createIcon(ico, 28); iconEl.style.color = color;
+  d.appendChild(iconEl);
+  var mid = document.createElement('div'); mid.className = 'mt-auto';
+  var v = document.createElement('div'); v.className = 'text-3xl font-extrabold text-on-surface font-headline'; v.textContent = val; mid.appendChild(v);
+  var l = document.createElement('div'); l.className = 'text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-0.5'; l.textContent = lbl; mid.appendChild(l);
+  if (delta !== undefined) { var del = document.createElement('div'); del.className = 'text-xs font-semibold mt-1'; del.style.color='#699cff'; del.textContent = '\u25B2 ' + delta + '%'; mid.appendChild(del); }
+  d.appendChild(mid);
+}
+
 function renderDashboard() {
   var total = tickets.length;
   if (!total) { document.getElementById('dash-empty').classList.remove('hidden'); document.getElementById('dash-content').classList.add('hidden'); return; }
@@ -717,63 +759,64 @@ function renderDashboard() {
   var escalados = total - autoRes - sens;
   var criticos  = tickets.filter(function(t){return t.pri==='Crítica';}).length;
   var fromChat  = tickets.filter(function(t){return t.origen==='chat';}).length;
+  var pct = total ? Math.round(autoRes/total*100) : 0;
 
-  var kpiRow = document.getElementById('kpi-row'); kpiRow.textContent = '';
-  var kpis = [
-    {ico:'confirmation_number',val:total,    lbl:'Total Tickets',  color:'#bd9dff'},
-    {ico:'smart_toy',          val:autoRes,  lbl:'Auto-resueltos', color:'#699cff', delta:total?Math.round(autoRes/total*100):0},
-    {ico:'engineering',        val:escalados,lbl:'Escalados',      color:'#ff86c3'},
-    {ico:'error',              val:criticos, lbl:'Críticos',       color:'#ff6e84'},
-    {ico:'chat',               val:fromChat, lbl:'Desde Chat',     color:'#a67aff'},
-  ];
-  kpis.forEach(function(k) {
-    var d = document.createElement('div');
-    d.className = 'card-glass glass-outline p-4 rounded-2xl';
-    d.style.borderLeft = '3px solid ' + k.color;
-    var ico = document.createElement('div'); ico.className = 'mb-1';
-    var iconEl = createIcon(k.ico, 22); iconEl.style.color = k.color;
-    ico.appendChild(iconEl); d.appendChild(ico);
-    var val = document.createElement('div'); val.className = 'text-2xl font-bold text-on-surface'; val.textContent = k.val; d.appendChild(val);
-    var lbl = document.createElement('div'); lbl.className = 'text-[10px] font-bold uppercase tracking-widest mt-0.5 text-slate-500'; lbl.textContent = k.lbl; d.appendChild(lbl);
-    if (k.delta !== undefined) { var del = document.createElement('div'); del.className = 'text-xs font-semibold mt-1'; del.style.color='#699cff'; del.textContent = '\u25B2 ' + k.delta + '%'; d.appendChild(del); }
-    kpiRow.appendChild(d);
-  });
+  // Fill KPI bento cells
+  fillKPI('kpi-total', 'confirmation_number', total, 'Total Tickets', '#bd9dff');
+  fillKPI('kpi-auto',  'smart_toy', autoRes, 'Auto-resueltos', '#699cff', pct);
+  fillKPI('kpi-esc',   'engineering', escalados, 'Escalados', '#ff86c3');
+  fillKPI('kpi-crit',  'error', criticos, 'Críticos', '#ff6e84');
+  fillKPI('kpi-chat',  'chat', fromChat, 'Desde Chat', '#a67aff');
+
+  // Resolution ring percentage
+  document.getElementById('ring-pct').textContent = pct + '%';
 
   Object.values(charts).forEach(function(c){c.destroy();}); charts = {};
 
   Chart.defaults.color = 'rgba(163,170,196,0.6)';
   Chart.defaults.borderColor = 'rgba(64,72,93,0.3)';
 
+  // Resolution ring chart (mini doughnut)
+  charts.ring = new Chart(document.getElementById('c-ring'), {
+    type:'doughnut',
+    data:{labels:['Auto','Pendiente'],datasets:[{data:[autoRes, total-autoRes],backgroundColor:['#bd9dff','rgba(64,72,93,0.3)'],borderWidth:0}]},
+    options:{responsive:false,cutout:'75%',plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{animateRotate:true}}
+  });
+
+  // Categoría doughnut
   var cats = {}; tickets.filter(function(t){return !t.sensible;}).forEach(function(t){cats[t.cat||'Otros']=(cats[t.cat||'Otros']||0)+1;});
   charts.cat = new Chart(document.getElementById('c-cat'), {
     type:'doughnut',
     data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats),backgroundColor:['#bd9dff','#699cff','#ff86c3','#a67aff','#ff6e84','#f976ba','#a9c4ff','#6d758c'],borderWidth:2,borderColor:'rgba(6,14,32,0.8)'}]},
-    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11,family:'Inter'},color:'rgba(163,170,196,0.8)',boxWidth:10}}}}
+    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'right',labels:{font:{size:10,family:'Inter'},color:'rgba(163,170,196,0.8)',boxWidth:8,padding:8}}}}
   });
 
+  // Estado bar chart
   var ests = {}; tickets.forEach(function(t){ests[t.estado]=(ests[t.estado]||0)+1;});
   var estColors = {'Resuelto (Auto)':'#699cff','Escalado a Marcos':'#ff6e84','En cola':'#bd9dff','Derivado a RRHH':'#ff86c3','Esperando aprobación':'#a67aff'};
   charts.est = new Chart(document.getElementById('c-est'), {
     type:'bar',
     data:{labels:Object.keys(ests),datasets:[{data:Object.values(ests),backgroundColor:Object.keys(ests).map(function(k){return estColors[k]||'#6d758c';}),borderRadius:6}]},
-    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{ticks:{font:{size:10}}}}}
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{ticks:{font:{size:9}}}}}
   });
 
+  // Top issues table
   var tbody = document.getElementById('top-issues'); tbody.textContent = '';
   Object.entries(cats).sort(function(a,b){return b[1]-a[1];}).forEach(function(pair) {
     var tr = document.createElement('tr'); tr.style.borderBottom='1px solid rgba(64,72,93,0.2)';
-    var td1 = document.createElement('td'); td1.className = 'py-2 text-sm text-slate-400'; td1.textContent = pair[0];
-    var td2 = document.createElement('td'); td2.className = 'py-2 text-right font-semibold text-sm text-on-surface'; td2.textContent = pair[1];
-    var td3 = document.createElement('td'); td3.className = 'py-2 text-right text-sm text-slate-500'; td3.textContent = Math.round(pair[1]/total*100)+'%';
+    var td1 = document.createElement('td'); td1.className = 'py-1.5 text-xs text-slate-400'; td1.textContent = pair[0];
+    var td2 = document.createElement('td'); td2.className = 'py-1.5 text-right font-semibold text-xs text-on-surface'; td2.textContent = pair[1];
+    var td3 = document.createElement('td'); td3.className = 'py-1.5 text-right text-xs text-slate-500'; td3.textContent = Math.round(pair[1]/total*100)+'%';
     tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tbody.appendChild(tr);
   });
 
+  // Departamento horizontal bar
   var depts = {}; tickets.filter(function(t){return !t.sensible&&t.departamento;}).forEach(function(t){depts[t.departamento]=(depts[t.departamento]||0)+1;});
   var deptSorted = Object.entries(depts).sort(function(a,b){return b[1]-a[1];});
   charts.dept = new Chart(document.getElementById('c-dept'), {
     type:'bar',
     data:{labels:deptSorted.map(function(d){return d[0];}),datasets:[{data:deptSorted.map(function(d){return d[1];}),backgroundColor:'#bd9dff',borderRadius:6}]},
-    options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1}}}}
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1}}}}
   });
 }
 
