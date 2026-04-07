@@ -1,422 +1,761 @@
+"""
+NovaTech · Sistema Inteligente de Soporte
+Chat IA + Tickets + Analytics + Base de Conocimiento auto-aprendible
+"""
 import streamlit as st
-import json
-import os
-from datetime import datetime, timedelta
-import random
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from datetime import datetime
 
-# --- Config ---
+from database import (init_db, save_ticket, get_tickets, start_conversation,
+                      add_message, get_messages, resolve_conversation,
+                      get_stats, load_demo_data)
+from knowledge_base import init_kb, search_kb, get_all_articles, add_learned_article
+from ai_engine import (is_sensitive, chat_response, classify_local,
+                       extract_ticket_decision, clean_response, extract_learning)
+
+# ── Page config ───────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="NovaTech - Sistema de Tickets con IA",
-    page_icon="🎫",
+    page_title="NovaTech · Soporte IA",
+    page_icon="⚡",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
-# --- Base de conocimiento (simulando wiki de Marcos exportada) ---
-KNOWLEDGE_BASE = {
-    "contraseña": {
-        "titulo": "Reset de Contraseña - Google Workspace",
-        "solucion": """**Pasos para restablecer tu contraseña de Google Workspace:**
+init_db()
+init_kb()
 
-1. Ve a [accounts.google.com](https://accounts.google.com)
-2. Haz clic en **"¿Olvidaste tu contraseña?"**
-3. Ingresa tu correo corporativo (@novatech.com)
-4. Selecciona el método de recuperación (teléfono o correo alternativo)
-5. Sigue las instrucciones en pantalla
-6. Crea una nueva contraseña (mínimo 8 caracteres, incluye mayúsculas y números)
+# ── CSS ───────────────────────────────────────────────────────────────
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-**Si no funciona:** Es posible que tu cuenta esté bloqueada. En ese caso, un agente de TI desbloqueará tu cuenta manualmente.
+*, *::before, *::after { box-sizing: border-box; }
+html, body, [class*="css"] { font-family: 'Inter', sans-serif !important; }
 
-⏱️ Tiempo estimado: 5 minutos"""
-    },
-    "vpn": {
-        "titulo": "Configuración y Troubleshooting de VPN",
-        "solucion": """**Si no puedes conectarte a la VPN:**
+/* ── Hide Streamlit chrome ── */
+#MainMenu, footer, header { visibility: hidden; }
+div[data-testid="stDecoration"] { display: none; }
 
-1. **Verifica tu conexión a internet** — abre cualquier página web
-2. **Reinicia el cliente VPN** — ciérralo completamente y vuelve a abrir
-3. **Verifica credenciales** — usa tu usuario y contraseña de Google Workspace
-4. **Windows:** Ve a Configuración → Red e Internet → VPN → Verifica que el perfil de NovaTech esté configurado
-5. **Mac:** Ve a Preferencias del Sistema → Red → VPN
-6. **Si sigue sin funcionar:** Reinicia tu computadora e intenta de nuevo
+/* ── Sidebar ── */
+section[data-testid="stSidebar"] {
+    background: linear-gradient(160deg, #0d1117 0%, #161b27 60%, #1a2235 100%) !important;
+    border-right: 1px solid #21283a !important;
+}
+section[data-testid="stSidebar"] > div { padding-top: 0 !important; }
+section[data-testid="stSidebar"] * { color: #c9d1d9 !important; }
+section[data-testid="stSidebar"] hr { border-color: #21283a !important; }
+section[data-testid="stSidebar"] .stButton button {
+    background: #21283a !important;
+    border: 1px solid #30394d !important;
+    color: #c9d1d9 !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
+}
+section[data-testid="stSidebar"] .stButton button:hover {
+    background: #2d3748 !important;
+    border-color: #4a5568 !important;
+}
+.stRadio label { padding: 6px 10px; border-radius: 8px; transition: all .15s; }
+.stRadio label:hover { background: rgba(255,255,255,.06) !important; }
+.stRadio div[data-testid="stWidgetLabel"] { display: none; }
 
-**Datos de conexión:**
-- Servidor: vpn.novatech.com
-- Tipo: IKEv2
-- Autenticación: Credenciales corporativas
+/* ── Main area ── */
+.main .block-container { padding: 1.5rem 2rem 4rem; max-width: 1400px; }
 
-⏱️ Tiempo estimado: 10 minutos"""
-    },
-    "software": {
-        "titulo": "Instalación de Software Aprobado",
-        "solucion": """**Software que puedes instalar sin aprobación:**
-Chrome, Slack, Zoom, VS Code, Postman, Figma, Office 365, Notion, Docker.
+/* ── Page title ── */
+.pg-title {
+    font-size: 26px; font-weight: 800; color: #0f172a; letter-spacing: -.5px;
+    margin-bottom: 2px;
+}
+.pg-sub { font-size: 14px; color: #64748b; margin-bottom: 28px; }
 
-**Pasos:**
-1. Descarga el software desde su sitio oficial
-2. Ejecuta el instalador con permisos de administrador
-3. Si te pide permisos elevados, contacta a TI
+/* ── KPI card ── */
+.kpi { background: #fff; border-radius: 14px; padding: 20px 22px;
+       border: 1px solid #e8edf4; box-shadow: 0 1px 4px rgba(0,0,0,.05);
+       display: flex; flex-direction: column; gap: 4px; }
+.kpi-ico { font-size: 22px; margin-bottom: 4px; }
+.kpi-val { font-size: 2rem; font-weight: 800; color: #0f172a; line-height: 1; }
+.kpi-lbl { font-size: 12px; font-weight: 600; color: #64748b;
+           text-transform: uppercase; letter-spacing: .06em; }
+.kpi-del { font-size: 13px; font-weight: 600; }
+.kpi-del.pos { color: #16a34a; } .kpi-del.neg { color: #dc2626; }
 
-**Si necesitas software que NO está en la lista:**
-Se requiere aprobación de la Directora General (Patricia Vega). Envía un correo a soporte@novatech.com indicando:
-- Nombre del software
-- Para qué lo necesitas
-- Si tiene costo
+/* ── Badge ── */
+.badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 10px; border-radius: 9999px;
+    font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.b-red    { background: #fee2e2; color: #b91c1c; }
+.b-orange { background: #ffedd5; color: #c2410c; }
+.b-yellow { background: #fef9c3; color: #92400e; }
+.b-green  { background: #dcfce7; color: #15803d; }
+.b-blue   { background: #dbeafe; color: #1d4ed8; }
+.b-purple { background: #ede9fe; color: #6d28d9; }
+.b-gray   { background: #f1f5f9; color: #475569; }
 
-⏱️ Tiempo de aprobación: 1-3 días hábiles"""
-    },
-    "impresora": {
-        "titulo": "Problemas Comunes de Impresora",
-        "solucion": """**Troubleshooting básico:**
+/* ── Ticket row ── */
+.tk-row {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 14px 18px; margin-bottom: 10px;
+    transition: box-shadow .2s, border-color .2s;
+}
+.tk-row:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); border-color: #c7d2de; }
+.tk-id { font-size: 11px; color: #94a3b8; font-weight: 600; }
+.tk-title { font-size: 15px; font-weight: 600; color: #1e293b; }
+.tk-meta { font-size: 12px; color: #64748b; }
 
-1. **Verifica que la impresora esté encendida** y conectada a la red
-2. **Reinicia la cola de impresión:**
-   - Windows: Servicios → Print Spooler → Reiniciar
-   - Mac: Preferencias → Impresoras → Eliminar y volver a agregar
-3. **Verifica el papel y tóner** — las impresoras de cada piso tienen suministros en el gabinete
-4. **Reinstala el driver** — descarga desde la intranet
+/* ── Chat ── */
+.chat-wrap { background: #f8fafc; border-radius: 14px;
+             border: 1px solid #e2e8f0; padding: 24px; min-height: 400px; }
+div[data-testid="stChatInput"] textarea {
+    border-radius: 12px !important;
+    border-color: #cbd5e1 !important;
+}
+div[data-testid="stChatMessage"] { padding: 0 !important; }
 
-**Si nada funciona:** Es probable que sea un problema de hardware. Un técnico revisará la impresora.
+/* ── KB article ── */
+.kb-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 18px 20px; margin-bottom: 12px;
+}
+.kb-tag {
+    display: inline-block; background: #f1f5f9; color: #475569;
+    border-radius: 6px; padding: 2px 8px; font-size: 11px; margin: 2px;
+}
+.kb-src-manual  { color: #3b82f6; }
+.kb-src-learned { color: #8b5cf6; }
 
-⏱️ Tiempo estimado: 15 minutos"""
-    }
+/* ── Divider ── */
+.section-divider { border: none; border-top: 1px solid #e2e8f0; margin: 20px 0; }
+
+/* ── Alerts ── */
+.alert-critical {
+    background: #fff1f2; border-left: 4px solid #ef4444;
+    border-radius: 8px; padding: 12px 16px; color: #7f1d1d; font-size: 14px;
+}
+.alert-success {
+    background: #f0fdf4; border-left: 4px solid #22c55e;
+    border-radius: 8px; padding: 12px 16px; color: #14532d; font-size: 14px;
+}
+.alert-info {
+    background: #eff6ff; border-left: 4px solid #3b82f6;
+    border-radius: 8px; padding: 12px 16px; color: #1e3a8a; font-size: 14px;
 }
 
-# Keywords para detección de contenido sensible RRHH
-SENSITIVE_KEYWORDS = [
-    "acoso", "hostigamiento", "discriminación", "denuncia", "abuso",
-    "discapacidad", "adaptación", "embarazo", "despido injustificado",
-    "amenaza", "violencia", "sexual", "intimidación", "mobbing",
-    "represalia", "confidencial rrhh", "recursos humanos confidencial"
-]
+/* ── Form ── */
+div[data-testid="stExpander"] {
+    border: 1px solid #e2e8f0 !important; border-radius: 12px !important;
+    background: #fff !important;
+}
+div[data-testid="stExpander"] summary { font-weight: 600 !important; }
 
-# --- Funciones de IA ---
-def detect_sensitive_content(text: str) -> bool:
-    """Detecta contenido sensible de RRHH por keywords.
-    NUNCA se envía a API externa."""
-    text_lower = text.lower()
-    return any(kw in text_lower for kw in SENSITIVE_KEYWORDS)
+/* ── Plotly ── */
+.js-plotly-plot .plotly { border-radius: 12px; }
 
-def classify_ticket_local(subject: str, body: str) -> dict:
-    """Clasificación por keywords cuando no hay API key."""
-    text = f"{subject} {body}".lower()
+/* ── Dataframe ── */
+div[data-testid="stDataFrame"] { border-radius: 12px; overflow: hidden; }
 
-    # Detección de prioridad crítica
-    critical_kw = ["servidor caído", "servidor de producción", "se cayó", "brecha de seguridad", "hackearon", "ransomware"]
-    if any(kw in text for kw in critical_kw):
-        return {"categoria": "🖥️ Servidor/Infraestructura", "prioridad": "🔴 Crítica", "confianza": 95, "auto_resolvable": False}
+/* ── Metric ── */
+div[data-testid="stMetric"] {
+    background: white; border-radius: 12px; padding: 16px 18px;
+    border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+</style>
+""", unsafe_allow_html=True)
 
-    # Categorización
-    if any(kw in text for kw in ["contraseña", "password", "clave", "no puedo entrar", "acceso bloqueado", "login"]):
-        return {"categoria": "🔑 Reset de Contraseñas", "prioridad": "🟢 Baja", "confianza": 90, "auto_resolvable": True, "kb_key": "contraseña"}
-    elif any(kw in text for kw in ["vpn", "conectividad", "red", "internet", "wifi", "conexión"]):
-        return {"categoria": "🌐 VPN / Conectividad", "prioridad": "🟡 Media", "confianza": 85, "auto_resolvable": True, "kb_key": "vpn"}
-    elif any(kw in text for kw in ["instalar", "software", "programa", "aplicación", "actualizar", "app"]):
-        return {"categoria": "💻 Software", "prioridad": "🟡 Media", "confianza": 80, "auto_resolvable": True, "kb_key": "software"}
-    elif any(kw in text for kw in ["permiso", "acceso", "carpeta", "compartir", "drive", "folder"]):
-        return {"categoria": "🔐 Permisos de Acceso", "prioridad": "🟡 Media", "confianza": 80, "auto_resolvable": False}
-    elif any(kw in text for kw in ["mouse", "teclado", "monitor", "pantalla", "hardware", "cable", "cargador"]):
-        return {"categoria": "🖱️ Hardware", "prioridad": "🟢 Baja", "confianza": 85, "auto_resolvable": False}
-    elif any(kw in text for kw in ["impresora", "imprimir", "impresión", "escáner", "scanner"]):
-        return {"categoria": "🖨️ Impresoras", "prioridad": "🟢 Baja", "confianza": 80, "auto_resolvable": True, "kb_key": "impresora"}
+# ── Session state ─────────────────────────────────────────────────────
+for k, v in [
+    ("conv_id", None), ("chat_msgs", []),
+    ("last_ticket", None), ("api_key", ""), ("show_form", False),
+]:
+    if k not in st.session_state:
+        st.session_state[k] = v
 
-    return {"categoria": "📦 Otros", "prioridad": "🟡 Media", "confianza": 50, "auto_resolvable": False}
+# ── Helpers ──────────────────────────────────────────────────────────
 
-def classify_ticket_ai(subject: str, body: str) -> dict:
-    """Clasificación con OpenAI si hay API key."""
-    try:
-        from openai import OpenAI
-        client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY", st.session_state.get("api_key", "")))
+PRIORITY_ORDER = {"🔴 Crítica": 0, "🟠 Alta": 1, "🟡 Media": 2, "🟢 Baja": 3}
 
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            response_format={"type": "json_object"},
-            messages=[
-                {"role": "system", "content": """Eres un sistema de clasificación de tickets de soporte TI para NovaTech Solutions (200 empleados, México).
 
-Clasifica el ticket en formato JSON con estos campos:
-- categoria: una de ["🔑 Reset de Contraseñas", "🌐 VPN / Conectividad", "💻 Software", "🔐 Permisos de Acceso", "🖱️ Hardware", "🖨️ Impresoras", "🖥️ Servidor/Infraestructura", "📦 Otros"]
-- prioridad: una de ["🔴 Crítica", "🟠 Alta", "🟡 Media", "🟢 Baja"]
-- confianza: número 0-100
-- auto_resolvable: boolean (true si se puede resolver con un instructivo)
-- kb_key: si auto_resolvable, una de ["contraseña", "vpn", "software", "impresora"], null si no
-- razonamiento: explicación breve en español
+def _priority_badge(pri: str) -> str:
+    cls = {"🔴 Crítica": "b-red", "🟠 Alta": "b-orange",
+           "🟡 Media": "b-yellow", "🟢 Baja": "b-green"}.get(pri, "b-gray")
+    return f'<span class="badge {cls}">{pri}</span>'
 
-Criterios de prioridad:
-- Crítica: servidor caído, brecha seguridad, sistema de producción inoperable
-- Alta: empleado no puede trabajar, bloqueo total
-- Media: puede trabajar parcialmente
-- Baja: solicitudes, preguntas, resets"""},
-                {"role": "user", "content": f"Asunto: {subject}\n\nContenido: {body}"}
-            ],
-            temperature=0.1
-        )
 
-        result = json.loads(response.choices[0].message.content)
-        return result
-    except Exception as e:
-        st.warning(f"IA no disponible, usando clasificación local: {e}")
-        return classify_ticket_local(subject, body)
+def _state_badge(estado: str) -> str:
+    if "Resuelto" in estado:   return f'<span class="badge b-green">{estado}</span>'
+    if "RRHH" in estado:       return f'<span class="badge b-purple">{estado}</span>'
+    if "Escalado" in estado:   return f'<span class="badge b-red">{estado}</span>'
+    if "aprobación" in estado: return f'<span class="badge b-orange">{estado}</span>'
+    return f'<span class="badge b-blue">{estado}</span>'
 
-def classify_ticket(subject: str, body: str) -> dict:
-    """Clasifica un ticket usando IA si está disponible, o keywords si no."""
-    api_key = os.environ.get("OPENAI_API_KEY", st.session_state.get("api_key", ""))
-    if api_key:
-        return classify_ticket_ai(subject, body)
-    return classify_ticket_local(subject, body)
 
-# --- Session State Init ---
-if "tickets" not in st.session_state:
-    st.session_state.tickets = []
-
-if "demo_loaded" not in st.session_state:
-    st.session_state.demo_loaded = False
-
-def load_demo_data():
-    """Carga tickets de ejemplo para demostración."""
-    demo_tickets = [
-        {"id": "TK-001", "fecha": (datetime.now() - timedelta(days=2)).strftime("%Y-%m-%d %H:%M"), "remitente": "carlos.ruiz@novatech.com", "departamento": "Ventas", "oficina": "Guadalajara", "asunto": "No puedo entrar a mi correo", "cuerpo": "Hola, desde ayer no puedo acceder a mi correo, creo que se me olvidó la contraseña y ya intenté recuperarla pero no me llega el código.", "clasificacion": {"categoria": "🔑 Reset de Contraseñas", "prioridad": "🟢 Baja", "confianza": 92, "auto_resolvable": True, "kb_key": "contraseña"}, "estado": "✅ Resuelto (Auto)", "respuesta_auto": True},
-        {"id": "TK-002", "fecha": (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d %H:%M"), "remitente": "ana.lopez@novatech.com", "departamento": "Administración", "oficina": "Guadalajara", "asunto": "La VPN no conecta desde casa", "cuerpo": "Estoy intentando conectarme a la VPN desde home office pero me da error de timeout. Ya reinicié mi computadora.", "clasificacion": {"categoria": "🌐 VPN / Conectividad", "prioridad": "🟡 Media", "confianza": 88, "auto_resolvable": True, "kb_key": "vpn"}, "estado": "✅ Resuelto (Auto)", "respuesta_auto": True},
-        {"id": "TK-003", "fecha": (datetime.now() - timedelta(hours=5)).strftime("%Y-%m-%d %H:%M"), "remitente": "roberto.diaz@novatech.com", "departamento": "Desarrollo", "oficina": "Monterrey", "asunto": "Se cayó el servidor de staging", "cuerpo": "El servidor de staging no responde desde hace 30 minutos. No podemos deployar. Esto es urgente porque tenemos entrega con cliente mañana.", "clasificacion": {"categoria": "🖥️ Servidor/Infraestructura", "prioridad": "🔴 Crítica", "confianza": 96, "auto_resolvable": False}, "estado": "⏳ Escalado a Marcos", "respuesta_auto": False},
-        {"id": "TK-004", "fecha": (datetime.now() - timedelta(hours=3)).strftime("%Y-%m-%d %H:%M"), "remitente": "laura.martinez@novatech.com", "departamento": "Diseño", "oficina": "Monterrey", "asunto": "Necesito acceso a la carpeta de assets del proyecto Alfa", "cuerpo": "Hola, me cambiaron de proyecto y necesito acceso a la carpeta compartida de Google Drive del proyecto Alfa. Mi jefe es Pedro Sánchez.", "clasificacion": {"categoria": "🔐 Permisos de Acceso", "prioridad": "🟡 Media", "confianza": 85, "auto_resolvable": False}, "estado": "⏳ Esperando aprobación de jefe", "respuesta_auto": False},
-        {"id": "TK-005", "fecha": (datetime.now() - timedelta(hours=1)).strftime("%Y-%m-%d %H:%M"), "remitente": "maria.garcia@novatech.com", "departamento": "QA", "oficina": "Monterrey", "asunto": "Quiero instalar Postman", "cuerpo": "Necesito instalar Postman para testing de APIs. ¿Me pueden ayudar?", "clasificacion": {"categoria": "💻 Software", "prioridad": "🟢 Baja", "confianza": 90, "auto_resolvable": True, "kb_key": "software"}, "estado": "✅ Resuelto (Auto)", "respuesta_auto": True},
-        {"id": "TK-006", "fecha": datetime.now().strftime("%Y-%m-%d %H:%M"), "remitente": "empleado.anonimo@novatech.com", "departamento": "—", "oficina": "—", "asunto": "Situación personal delicada", "cuerpo": "Necesito reportar una situación de hostigamiento con mi supervisor. Es urgente y confidencial.", "clasificacion": {"categoria": "🚨 RRHH - CONFIDENCIAL", "prioridad": "🔴 Crítica", "confianza": 99, "auto_resolvable": False}, "estado": "🔒 Derivado a RRHH", "respuesta_auto": False, "sensible": True},
-    ]
-    st.session_state.tickets = demo_tickets
-    st.session_state.demo_loaded = True
-
-# --- Sidebar ---
+# ── Sidebar ───────────────────────────────────────────────────────────
 with st.sidebar:
-    st.image("https://img.icons8.com/fluency/96/artificial-intelligence.png", width=60)
-    st.title("NovaTech Tickets")
-    st.caption("Sistema Inteligente de Soporte con IA")
+    st.markdown("""
+    <div style="padding:24px 16px 12px;">
+        <div style="font-size:20px;font-weight:800;color:#f0f6fc;">⚡ NovaTech</div>
+        <div style="font-size:11px;color:#484f58;margin-top:2px;letter-spacing:.04em;">
+            SOPORTE INTELIGENTE CON IA
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    menu = st.radio("nav", [
+        "💬  Chat de Soporte",
+        "🎫  Tickets",
+        "📊  Dashboard",
+        "🧠  Base de Conocimiento",
+        "⚙️  Configuración",
+    ])
+
     st.divider()
 
-    menu = st.radio("Navegación", ["📝 Nuevo Ticket", "📋 Todos los Tickets", "📊 Dashboard", "⚙️ Configuración"], label_visibility="collapsed")
+    stats = get_stats()
+    total = stats["total"]
+    auto_pct = f"{stats['auto'] / total * 100:.0f}" if total else "0"
+
+    st.markdown(f"""
+    <div style="padding:0 12px 8px;">
+        <div style="font-size:10px;color:#484f58;text-transform:uppercase;
+                    letter-spacing:.08em;margin-bottom:14px;">Estado del sistema</div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+            <span style="color:#8b949e;font-size:13px;">Total tickets</span>
+            <span style="color:#e6edf3;font-weight:700;font-size:13px;">{total}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+            <span style="color:#8b949e;font-size:13px;">Resueltos por IA</span>
+            <span style="color:#3fb950;font-weight:700;font-size:13px;">{stats['auto']} ({auto_pct}%)</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+            <span style="color:#8b949e;font-size:13px;">Críticos</span>
+            <span style="color:#f85149;font-weight:700;font-size:13px;">{stats['criticos']}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+            <span style="color:#8b949e;font-size:13px;">Desde chat</span>
+            <span style="color:#d2a8ff;font-weight:700;font-size:13px;">{stats['chat_orig']}</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.divider()
-    if not st.session_state.demo_loaded:
-        if st.button("🎮 Cargar datos demo", use_container_width=True):
+
+    ca, cb = st.columns(2)
+    with ca:
+        if st.button("📥 Demo", use_container_width=True):
             load_demo_data()
             st.rerun()
+    with cb:
+        if st.button("🗑 Chat", use_container_width=True, help="Reiniciar chat"):
+            st.session_state.conv_id = None
+            st.session_state.chat_msgs = []
+            st.session_state.last_ticket = None
+            st.rerun()
+
+    if st.session_state.api_key:
+        st.markdown(
+            '<div style="margin:12px 12px 0;background:#1a2f1a;border:1px solid #2ea043;'
+            'border-radius:8px;padding:8px 12px;font-size:12px;color:#3fb950;">🤖 GPT-4o-mini activo</div>',
+            unsafe_allow_html=True,
+        )
     else:
-        st.success(f"✅ {len(st.session_state.tickets)} tickets cargados")
+        st.markdown(
+            '<div style="margin:12px 12px 0;background:#1c2333;border:1px solid #30363d;'
+            'border-radius:8px;padding:8px 12px;font-size:12px;color:#8b949e;">🔑 Modo local (keywords)</div>',
+            unsafe_allow_html=True,
+        )
 
-    st.divider()
-    st.caption("MVP — Evaluación Ternova 2026")
+# ═══════════════════════════════════════════════════════════════════════
+#  CHAT DE SOPORTE
+# ═══════════════════════════════════════════════════════════════════════
+if "Chat" in menu:
+    st.markdown('<div class="pg-title">💬 Chat de Soporte</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="pg-sub">Cuéntame tu problema. Si puedo resolverlo lo hago aquí; '
+        'si no, creo el ticket automáticamente.</div>',
+        unsafe_allow_html=True,
+    )
 
-# --- Páginas ---
-if menu == "📝 Nuevo Ticket":
-    st.header("📝 Crear Nuevo Ticket")
-    st.info("Simula un email entrante a soporte@novatech.com")
+    # Ticket generado banner
+    if st.session_state.last_ticket:
+        t = st.session_state.last_ticket
+        st.markdown(
+            f'<div class="alert-success">🎫 <b>Ticket {t["id"]}</b> creado automáticamente · '
+            f'{t.get("categoria","—")} · {t.get("prioridad","—")}</div>',
+            unsafe_allow_html=True,
+        )
 
-    col1, col2 = st.columns(2)
-    with col1:
-        remitente = st.text_input("De (email)", placeholder="nombre@novatech.com")
-        departamento = st.selectbox("Departamento", ["Desarrollo", "Infraestructura", "Operaciones", "Ventas", "Administración", "RRHH", "Dirección", "QA", "Diseño"])
-    with col2:
-        oficina = st.selectbox("Oficina", ["Monterrey", "Guadalajara"])
-        asunto = st.text_input("Asunto", placeholder="No puedo conectarme a la VPN")
+    # Inicializar conversación
+    if not st.session_state.conv_id:
+        st.session_state.conv_id = start_conversation()
 
-    cuerpo = st.text_area("Descripción del problema", height=150, placeholder="Describe tu problema con el mayor detalle posible...")
+    # Bienvenida
+    if not st.session_state.chat_msgs:
+        st.markdown("""
+        <div style="text-align:center;padding:60px 20px 20px;color:#94a3b8;">
+            <div style="font-size:56px;margin-bottom:12px;">⚡</div>
+            <div style="font-size:20px;font-weight:700;color:#1e293b;">Hola, soy Nova</div>
+            <div style="font-size:14px;margin-top:6px;color:#64748b;">
+                Asistente inteligente de TI · NovaTech Solutions
+            </div>
+            <div style="display:flex;gap:10px;justify-content:center;margin-top:24px;flex-wrap:wrap;">
+                <span class="badge b-blue">🔑 Contraseñas</span>
+                <span class="badge b-green">🌐 VPN</span>
+                <span class="badge b-purple">💻 Software</span>
+                <span class="badge b-yellow">🖨️ Impresoras</span>
+                <span class="badge b-gray">🖱️ Hardware</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    if st.button("🚀 Enviar Ticket", type="primary", use_container_width=True):
-        if not remitente or not asunto or not cuerpo:
-            st.error("Completa todos los campos")
+    # Mensajes del chat
+    for msg in st.session_state.chat_msgs:
+        avatar = "🧑‍💼" if msg["role"] == "user" else "⚡"
+        with st.chat_message(msg["role"], avatar=avatar):
+            st.markdown(msg["content"])
+
+    # Input
+    if prompt := st.chat_input("Escribe tu problema o pregunta..."):
+
+        if is_sensitive(prompt):
+            # Contenido sensible → ticket RRHH + respuesta
+            st.session_state.chat_msgs.append({"role": "user", "content": prompt})
+            reply = (
+                "🔒 **Contenido confidencial detectado.**\n\n"
+                "Este caso ha sido derivado **directamente a Recursos Humanos** de forma confidencial. "
+                "Ningún agente de TI tendrá acceso al contenido.\n\n"
+                "El equipo de RRHH se pondrá en contacto contigo a la brevedad."
+            )
+            st.session_state.chat_msgs.append({"role": "assistant", "content": reply})
+            add_message(st.session_state.conv_id, "user", prompt)
+            add_message(st.session_state.conv_id, "assistant", reply)
+            tid = save_ticket({
+                "remitente": "confidencial@novatech.com",
+                "asunto": "Caso confidencial RRHH",
+                "cuerpo": "[OCULTO POR PRIVACIDAD]",
+                "categoria": "🚨 RRHH - CONFIDENCIAL",
+                "prioridad": "🔴 Crítica", "confianza": 99,
+                "estado": "🔒 Derivado a RRHH", "sensible": True,
+                "origen": "chat", "conversation_id": st.session_state.conv_id,
+            })
+            st.session_state.last_ticket = {"id": tid, "categoria": "🚨 RRHH", "prioridad": "🔴 Crítica"}
+            st.rerun()
+
         else:
-            with st.spinner("🤖 La IA está analizando tu ticket..."):
-                # 1. Detección de contenido sensible PRIMERO (local, sin API)
-                is_sensitive = detect_sensitive_content(f"{asunto} {cuerpo}")
+            st.session_state.chat_msgs.append({"role": "user", "content": prompt})
+            add_message(st.session_state.conv_id, "user", prompt)
 
-                if is_sensitive:
-                    clasificacion = {
-                        "categoria": "🚨 RRHH - CONFIDENCIAL",
-                        "prioridad": "🔴 Crítica",
-                        "confianza": 99,
-                        "auto_resolvable": False
-                    }
-                    estado = "🔒 Derivado a RRHH"
-                    st.warning("🔒 **Contenido sensible detectado.** Este ticket ha sido derivado directamente a Recursos Humanos de forma confidencial. Ningún agente de TI tendrá acceso.")
-                else:
-                    # 2. Clasificación por IA
-                    clasificacion = classify_ticket(asunto, cuerpo)
+            with st.spinner("Nova está pensando…"):
+                raw = chat_response(st.session_state.chat_msgs[:-1], prompt)
+                decision = extract_ticket_decision(raw)
+                visible = clean_response(raw)
 
-                    if clasificacion.get("auto_resolvable") and clasificacion.get("kb_key"):
-                        estado = "✅ Resuelto (Auto)"
-                        kb = KNOWLEDGE_BASE.get(clasificacion["kb_key"], {})
-                        st.success(f"### ✅ Respuesta automática\n**{kb.get('titulo', '')}**\n\n{kb.get('solucion', '')}")
-                        st.info("💡 *Si esta solución no funciona, responde a este correo y un agente humano te atenderá.*")
-                    elif clasificacion.get("prioridad") == "🔴 Crítica":
-                        estado = "⏳ Escalado a Marcos"
-                        st.error("🚨 **TICKET CRÍTICO** — Escalado inmediatamente a Marcos Solís y Ricardo Méndez.")
-                    else:
-                        estado = "⏳ En cola para agente"
-                        st.warning(f"📋 Ticket registrado y asignado a un agente de TI. Prioridad: {clasificacion.get('prioridad', 'Media')}")
+            st.session_state.chat_msgs.append({"role": "assistant", "content": visible})
+            add_message(st.session_state.conv_id, "assistant", visible)
 
-                ticket_id = f"TK-{len(st.session_state.tickets) + 1:03d}"
-                nuevo_ticket = {
-                    "id": ticket_id,
-                    "fecha": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                    "remitente": remitente,
-                    "departamento": departamento,
-                    "oficina": oficina,
-                    "asunto": asunto,
-                    "cuerpo": cuerpo,
-                    "clasificacion": clasificacion,
-                    "estado": estado,
-                    "respuesta_auto": estado == "✅ Resuelto (Auto)",
-                    "sensible": is_sensitive if is_sensitive else False
+            # Auto-ticket
+            if decision and decision.get("generar_ticket"):
+                cl_data = classify_local(prompt)
+                tid = save_ticket({
+                    "remitente": "chat@novatech.com",
+                    "asunto": decision.get("asunto_sugerido", prompt[:70]),
+                    "cuerpo": prompt,
+                    "categoria": decision.get("categoria", cl_data.get("categoria")),
+                    "prioridad": decision.get("prioridad", cl_data.get("prioridad")),
+                    "confianza": cl_data.get("confianza", 70),
+                    "estado": "⏳ En cola",
+                    "auto_resolvable": False,
+                    "origen": "chat",
+                    "conversation_id": st.session_state.conv_id,
+                })
+                st.session_state.last_ticket = {
+                    "id": tid,
+                    "categoria": decision.get("categoria", ""),
+                    "prioridad": decision.get("prioridad", ""),
                 }
-                st.session_state.tickets.append(nuevo_ticket)
-
-                # Mostrar clasificación
-                st.divider()
-                c1, c2, c3 = st.columns(3)
-                c1.metric("Categoría", clasificacion.get("categoria", "—"))
-                c2.metric("Prioridad", clasificacion.get("prioridad", "—"))
-                c3.metric("Confianza IA", f"{clasificacion.get('confianza', 0)}%")
-
-elif menu == "📋 Todos los Tickets":
-    st.header("📋 Todos los Tickets")
-
-    if not st.session_state.tickets:
-        st.info("No hay tickets aún. Crea uno nuevo o carga los datos demo.")
-    else:
-        # Filtros
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            filtro_estado = st.multiselect("Estado", ["✅ Resuelto (Auto)", "⏳ Escalado a Marcos", "⏳ En cola para agente", "⏳ Esperando aprobación de jefe", "🔒 Derivado a RRHH"], default=None)
-        with col2:
-            filtro_prioridad = st.multiselect("Prioridad", ["🔴 Crítica", "🟠 Alta", "🟡 Media", "🟢 Baja"], default=None)
-        with col3:
-            filtro_oficina = st.multiselect("Oficina", ["Monterrey", "Guadalajara"], default=None)
-
-        tickets_filtrados = st.session_state.tickets
-        if filtro_estado:
-            tickets_filtrados = [t for t in tickets_filtrados if t["estado"] in filtro_estado]
-        if filtro_prioridad:
-            tickets_filtrados = [t for t in tickets_filtrados if t["clasificacion"].get("prioridad") in filtro_prioridad]
-        if filtro_oficina:
-            tickets_filtrados = [t for t in tickets_filtrados if t.get("oficina") in filtro_oficina]
-
-        for ticket in reversed(tickets_filtrados):
-            if ticket.get("sensible"):
-                with st.expander(f"🔒 {ticket['id']} — CONFIDENCIAL — {ticket['fecha']}"):
-                    st.error("Este ticket es confidencial y solo es visible para RRHH. Contenido oculto por políticas de privacidad.")
             else:
-                prioridad = ticket["clasificacion"].get("prioridad", "")
-                with st.expander(f"{prioridad} {ticket['id']} — {ticket['asunto']} — {ticket['estado']}"):
-                    c1, c2, c3, c4 = st.columns(4)
-                    c1.write(f"**De:** {ticket['remitente']}")
-                    c2.write(f"**Depto:** {ticket.get('departamento', '—')}")
-                    c3.write(f"**Oficina:** {ticket.get('oficina', '—')}")
-                    c4.write(f"**Fecha:** {ticket['fecha']}")
-                    st.write(f"**Categoría:** {ticket['clasificacion'].get('categoria', '—')}")
-                    st.write(f"**Confianza IA:** {ticket['clasificacion'].get('confianza', 0)}%")
-                    st.divider()
-                    st.write(ticket.get("cuerpo", ""))
+                st.session_state.last_ticket = None
 
-                    if ticket.get("respuesta_auto") and ticket["clasificacion"].get("kb_key"):
-                        kb = KNOWLEDGE_BASE.get(ticket["clasificacion"]["kb_key"], {})
-                        st.success(f"**Respuesta automática enviada:**\n\n{kb.get('solucion', '')}")
+            # Auto-aprendizaje al final de conversaciones largas
+            if len(st.session_state.chat_msgs) >= 8 and len(st.session_state.chat_msgs) % 8 == 0:
+                learning = extract_learning(st.session_state.chat_msgs)
+                if learning and learning.get("vale_guardar"):
+                    add_learned_article(
+                        titulo=learning["titulo"],
+                        categoria=learning.get("categoria", "📦 Otros"),
+                        tags=learning.get("tags", []),
+                        contenido=learning["contenido"],
+                        conversation_id=st.session_state.conv_id,
+                    )
 
-elif menu == "📊 Dashboard":
-    st.header("📊 Dashboard de Métricas")
+            st.rerun()
 
-    if not st.session_state.tickets:
-        st.info("Carga los datos demo para ver el dashboard con métricas.")
+# ═══════════════════════════════════════════════════════════════════════
+#  TICKETS
+# ═══════════════════════════════════════════════════════════════════════
+elif "Tickets" in menu:
+    st.markdown('<div class="pg-title">🎫 Gestión de Tickets</div>', unsafe_allow_html=True)
+    st.markdown('<div class="pg-sub">Explora, filtra y ordena todos los tickets de soporte.</div>',
+                unsafe_allow_html=True)
+
+    # Toolbar
+    col_s, col_btn = st.columns([5, 1])
+    with col_s:
+        search = st.text_input("", placeholder="🔍  Buscar por asunto, remitente o descripción…",
+                               label_visibility="collapsed")
+    with col_btn:
+        if st.button("＋ Nuevo", type="primary", use_container_width=True):
+            st.session_state.show_form = not st.session_state.show_form
+
+    # Formulario nuevo ticket
+    if st.session_state.show_form:
+        with st.expander("➕ Crear Ticket Manualmente", expanded=True):
+            fc1, fc2, fc3 = st.columns(3)
+            with fc1:
+                f_remitente = st.text_input("Email", placeholder="usuario@novatech.com")
+                f_depto = st.selectbox("Departamento", [
+                    "Desarrollo", "Infraestructura", "Operaciones", "Ventas",
+                    "Administración", "RRHH", "Dirección", "QA", "Diseño"])
+            with fc2:
+                f_oficina = st.selectbox("Oficina", ["Monterrey", "Guadalajara"])
+                f_asunto = st.text_input("Asunto", placeholder="Describe brevemente el problema")
+            with fc3:
+                f_prioridad = st.selectbox("Prioridad manual", ["Auto", "🔴 Crítica", "🟠 Alta", "🟡 Media", "🟢 Baja"])
+            f_cuerpo = st.text_area("Descripción completa", height=100,
+                                    placeholder="Con más detalle…")
+
+            if st.button("✅ Crear Ticket", type="primary"):
+                if f_remitente and f_asunto and f_cuerpo:
+                    cl_data = classify_local(f"{f_asunto} {f_cuerpo}")
+                    pri = f_prioridad if f_prioridad != "Auto" else cl_data.get("prioridad", "🟡 Media")
+                    estado = "✅ Resuelto (Auto)" if cl_data.get("auto_resolvable") else "⏳ En cola"
+                    tid = save_ticket({
+                        "remitente": f_remitente, "departamento": f_depto,
+                        "oficina": f_oficina, "asunto": f_asunto, "cuerpo": f_cuerpo,
+                        "categoria": cl_data.get("categoria"), "prioridad": pri,
+                        "confianza": cl_data.get("confianza", 70), "estado": estado,
+                        "auto_resolvable": cl_data.get("auto_resolvable", False),
+                        "kb_key": cl_data.get("kb_key"), "origen": "manual",
+                    })
+                    st.success(f"✅ Ticket **{tid}** creado.")
+                    st.session_state.show_form = False
+                    st.rerun()
+                else:
+                    st.error("Completa email, asunto y descripción.")
+
+    # Filtros
+    with st.expander("🔽 Filtros y Ordenación", expanded=False):
+        fc1, fc2, fc3, fc4 = st.columns(4)
+        with fc1:
+            f_pri = st.multiselect("Prioridad", ["🔴 Crítica", "🟠 Alta", "🟡 Media", "🟢 Baja"])
+        with fc2:
+            f_est = st.multiselect("Estado", [
+                "✅ Resuelto (Auto)", "⏳ Escalado a Marcos", "⏳ En cola",
+                "⏳ Esperando aprobación", "🔒 Derivado a RRHH"])
+        with fc3:
+            f_cat = st.multiselect("Categoría", [
+                "🔑 Reset de Contraseñas", "🌐 VPN / Conectividad", "💻 Software",
+                "🔐 Permisos de Acceso", "🖱️ Hardware", "🖨️ Impresoras",
+                "🖥️ Servidor/Infraestructura", "📦 Otros"])
+        with fc4:
+            sort_by = st.selectbox("Ordenar", [
+                "Más reciente", "Más antiguo", "Mayor prioridad", "Menor prioridad"])
+
+    tickets = get_tickets(
+        estado=f_est or None,
+        prioridad=f_pri or None,
+        categoria=f_cat or None,
+        search=search or None,
+    )
+
+    # Ordenar
+    if sort_by == "Más antiguo":
+        tickets = list(reversed(tickets))
+    elif sort_by == "Mayor prioridad":
+        tickets.sort(key=lambda t: PRIORITY_ORDER.get(t.get("prioridad", ""), 9))
+    elif sort_by == "Menor prioridad":
+        tickets.sort(key=lambda t: -PRIORITY_ORDER.get(t.get("prioridad", ""), -1))
+
+    st.markdown(
+        f'<div style="color:#64748b;font-size:13px;margin:4px 0 16px;">'
+        f'<b>{len(tickets)}</b> tickets encontrados</div>',
+        unsafe_allow_html=True,
+    )
+
+    if not tickets:
+        st.markdown(
+            '<div class="alert-info">No hay tickets que coincidan con los filtros. '
+            'Usa el chat para crear uno o carga los datos demo.</div>',
+            unsafe_allow_html=True,
+        )
+
+    for tk in tickets:
+        if tk.get("sensible"):
+            with st.expander(f"🔒 {tk['id']} — CONFIDENCIAL RRHH — {tk['fecha']}"):
+                st.error("Contenido confidencial. Visible solo para RRHH.")
+            continue
+
+        pri_badge = _priority_badge(tk.get("prioridad", ""))
+        est_badge = _state_badge(tk.get("estado", ""))
+        origen_ico = "💬" if tk.get("origen") == "chat" else "📝"
+
+        with st.expander(
+            f"{origen_ico} **{tk['id']}**  ·  {tk['asunto']}  ·  {tk['fecha']}",
+            expanded=False,
+        ):
+            r1, r2, r3, r4 = st.columns(4)
+            r1.markdown(f"**Remitente**  \n`{tk.get('remitente','—')}`")
+            r2.markdown(f"**Departamento**  \n{tk.get('departamento','—')}")
+            r3.markdown(f"**Oficina**  \n{tk.get('oficina','—')}")
+            r4.markdown(f"**Origen**  \n{origen_ico} {tk.get('origen','manual')}")
+
+            st.markdown("<hr class='section-divider'>", unsafe_allow_html=True)
+            r5, r6, r7 = st.columns(3)
+            r5.markdown(f"**Categoría**  \n{tk.get('categoria','—')}")
+            r6.markdown(f"**Prioridad**  \n{tk.get('prioridad','—')}")
+            r7.markdown(f"**Confianza IA**  \n{tk.get('confianza',0)}%")
+
+            st.markdown(f"**Estado:** {tk.get('estado','—')}")
+            if tk.get("cuerpo"):
+                st.markdown(f"---\n> {tk['cuerpo']}")
+
+# ═══════════════════════════════════════════════════════════════════════
+#  DASHBOARD
+# ═══════════════════════════════════════════════════════════════════════
+elif "Dashboard" in menu:
+    st.markdown('<div class="pg-title">📊 Dashboard Analítico</div>', unsafe_allow_html=True)
+    st.markdown('<div class="pg-sub">Métricas en tiempo real del sistema de soporte.</div>',
+                unsafe_allow_html=True)
+
+    stats = get_stats()
+    total = stats["total"]
+
+    if total == 0:
+        st.markdown(
+            '<div class="alert-info">Carga datos demo (barra lateral) o crea tickets para ver métricas.</div>',
+            unsafe_allow_html=True,
+        )
     else:
-        tickets = st.session_state.tickets
-        total = len(tickets)
-        auto_resueltos = sum(1 for t in tickets if t.get("respuesta_auto"))
-        sensibles = sum(1 for t in tickets if t.get("sensible"))
-        escalados = total - auto_resueltos - sensibles
+        # ── KPIs ──
+        k1, k2, k3, k4, k5 = st.columns(5)
+        auto_pct = stats["auto"] / total * 100 if total else 0
+        escalados = total - stats["auto"] - stats["sensibles"]
 
-        # KPIs principales
-        st.subheader("Resumen General")
-        k1, k2, k3, k4 = st.columns(4)
-        k1.metric("Total Tickets", total)
-        k2.metric("Resueltos por IA", auto_resueltos, f"{auto_resueltos/total*100:.0f}%" if total > 0 else "0%")
-        k3.metric("Escalados a Humano", escalados)
-        k4.metric("RRHH (Confidencial)", sensibles)
+        with k1:
+            st.markdown(f"""
+            <div class="kpi">
+                <div class="kpi-ico">🎫</div>
+                <div class="kpi-val">{total}</div>
+                <div class="kpi-lbl">Total Tickets</div>
+            </div>""", unsafe_allow_html=True)
+        with k2:
+            st.markdown(f"""
+            <div class="kpi">
+                <div class="kpi-ico">🤖</div>
+                <div class="kpi-val">{stats['auto']}</div>
+                <div class="kpi-lbl">Auto-resueltos</div>
+                <div class="kpi-del pos">▲ {auto_pct:.0f}%</div>
+            </div>""", unsafe_allow_html=True)
+        with k3:
+            st.markdown(f"""
+            <div class="kpi">
+                <div class="kpi-ico">👷</div>
+                <div class="kpi-val">{escalados}</div>
+                <div class="kpi-lbl">Escalados</div>
+            </div>""", unsafe_allow_html=True)
+        with k4:
+            st.markdown(f"""
+            <div class="kpi">
+                <div class="kpi-ico">🔴</div>
+                <div class="kpi-val">{stats['criticos']}</div>
+                <div class="kpi-lbl">Críticos</div>
+            </div>""", unsafe_allow_html=True)
+        with k5:
+            st.markdown(f"""
+            <div class="kpi">
+                <div class="kpi-ico">💬</div>
+                <div class="kpi-val">{stats['chat_orig']}</div>
+                <div class="kpi-lbl">Desde Chat</div>
+            </div>""", unsafe_allow_html=True)
 
-        st.divider()
+        st.markdown("<br>", unsafe_allow_html=True)
 
-        col1, col2 = st.columns(2)
+        # ── Charts row 1 ──
+        c1, c2 = st.columns(2)
 
-        with col1:
-            # Gráfica por categoría
-            categorias = [t["clasificacion"].get("categoria", "Otro") for t in tickets]
-            df_cat = pd.DataFrame({"Categoría": categorias})
-            fig_cat = px.pie(df_cat, names="Categoría", title="Tickets por Categoría", hole=0.4)
-            fig_cat.update_layout(height=400)
-            st.plotly_chart(fig_cat, use_container_width=True)
+        with c1:
+            if stats["by_cat"]:
+                df_cat = pd.DataFrame(stats["by_cat"])
+                df_cat.columns = ["Categoría", "Tickets"]
+                fig = px.pie(df_cat, names="Categoría", values="Tickets",
+                             title="Tickets por Categoría", hole=0.48,
+                             color_discrete_sequence=["#3b82f6","#22c55e","#f59e0b",
+                                                       "#a855f7","#ef4444","#14b8a6",
+                                                       "#6366f1","#94a3b8"])
+                fig.update_layout(height=360, margin=dict(t=40, b=10, l=0, r=0),
+                                  font=dict(family="Inter"),
+                                  legend=dict(orientation="v", x=1, y=0.5))
+                fig.update_traces(textposition="inside", textinfo="percent+label")
+                st.plotly_chart(fig, use_container_width=True)
 
-        with col2:
-            # Gráfica por prioridad
-            prioridades = [t["clasificacion"].get("prioridad", "Media") for t in tickets]
-            df_pri = pd.DataFrame({"Prioridad": prioridades})
-            fig_pri = px.pie(df_pri, names="Prioridad", title="Tickets por Prioridad", hole=0.4,
-                           color_discrete_map={"🔴 Crítica": "#e74c3c", "🟠 Alta": "#e67e22", "🟡 Media": "#f1c40f", "🟢 Baja": "#2ecc71"})
-            fig_pri.update_layout(height=400)
-            st.plotly_chart(fig_pri, use_container_width=True)
+        with c2:
+            if stats["by_estado"]:
+                df_est = pd.DataFrame(stats["by_estado"])
+                df_est.columns = ["Estado", "Tickets"]
+                color_map = {
+                    "✅ Resuelto (Auto)": "#22c55e",
+                    "⏳ Escalado a Marcos": "#ef4444",
+                    "⏳ En cola": "#3b82f6",
+                    "🔒 Derivado a RRHH": "#a855f7",
+                    "⏳ Esperando aprobación": "#f59e0b",
+                }
+                colors = [color_map.get(e, "#94a3b8") for e in df_est["Estado"]]
+                fig2 = go.Figure(go.Bar(
+                    x=df_est["Estado"], y=df_est["Tickets"],
+                    marker_color=colors, text=df_est["Tickets"],
+                    textposition="outside",
+                ))
+                fig2.update_layout(
+                    title="Tickets por Estado", height=360,
+                    margin=dict(t=40, b=10), showlegend=False,
+                    font=dict(family="Inter"),
+                    xaxis=dict(tickangle=-15),
+                    plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
+                    yaxis=dict(gridcolor="#f1f5f9"),
+                )
+                st.plotly_chart(fig2, use_container_width=True)
 
-        col3, col4 = st.columns(2)
+        # ── Charts row 2 ──
+        if stats["by_dept"]:
+            c3, c4 = st.columns([2, 3])
+            with c3:
+                st.subheader("🔥 Issues Más Comunes")
+                df_top = pd.DataFrame(stats["by_cat"])
+                if not df_top.empty:
+                    df_top.columns = ["Categoría", "Tickets"]
+                    df_top["% Total"] = (df_top["Tickets"] / total * 100).round(1).astype(str) + "%"
+                    st.dataframe(df_top, use_container_width=True, hide_index=True)
 
-        with col3:
-            # Resolución automática vs manual
-            fig_res = go.Figure(data=[go.Bar(
-                x=["Resueltos por IA", "Escalados a Humano", "RRHH"],
-                y=[auto_resueltos, escalados, sensibles],
-                marker_color=["#2ecc71", "#3498db", "#e74c3c"]
-            )])
-            fig_res.update_layout(title="Resolución: IA vs Humano", height=400)
-            st.plotly_chart(fig_res, use_container_width=True)
+            with c4:
+                df_dept = pd.DataFrame(stats["by_dept"])
+                df_dept.columns = ["Departamento", "Tickets"]
+                fig3 = px.bar(df_dept, x="Tickets", y="Departamento",
+                              orientation="h", title="Tickets por Departamento",
+                              color="Tickets",
+                              color_continuous_scale=["#dbeafe", "#3b82f6", "#1d4ed8"])
+                fig3.update_layout(height=320, font=dict(family="Inter"),
+                                   coloraxis_showscale=False,
+                                   margin=dict(t=40, b=10, l=0, r=0),
+                                   plot_bgcolor="rgba(0,0,0,0)",
+                                   paper_bgcolor="rgba(0,0,0,0)",
+                                   xaxis=dict(gridcolor="#f1f5f9"))
+                st.plotly_chart(fig3, use_container_width=True)
 
-        with col4:
-            # Por oficina
-            oficinas = [t.get("oficina", "—") for t in tickets if not t.get("sensible")]
-            df_ofi = pd.DataFrame({"Oficina": oficinas})
-            fig_ofi = px.pie(df_ofi, names="Oficina", title="Tickets por Oficina", hole=0.4,
-                           color_discrete_map={"Monterrey": "#3498db", "Guadalajara": "#9b59b6"})
-            fig_ofi.update_layout(height=400)
-            st.plotly_chart(fig_ofi, use_container_width=True)
+# ═══════════════════════════════════════════════════════════════════════
+#  BASE DE CONOCIMIENTO
+# ═══════════════════════════════════════════════════════════════════════
+elif "Conocimiento" in menu:
+    st.markdown('<div class="pg-title">🧠 Base de Conocimiento</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="pg-sub">Artículos de soporte — escritos manualmente y aprendidos '
+        'automáticamente de las conversaciones del chat.</div>',
+        unsafe_allow_html=True,
+    )
 
-        # Tabla resumen por departamento
-        st.subheader("Tickets por Departamento")
-        deptos = [t.get("departamento", "—") for t in tickets if not t.get("sensible")]
-        df_dep = pd.DataFrame({"Departamento": deptos}).value_counts().reset_index()
-        df_dep.columns = ["Departamento", "Tickets"]
-        st.dataframe(df_dep, use_container_width=True, hide_index=True)
+    kb_q = st.text_input("", placeholder="🔍  Buscar artículos… (contraseña, VPN, impresora…)",
+                          label_visibility="collapsed")
 
-elif menu == "⚙️ Configuración":
-    st.header("⚙️ Configuración")
+    articles = search_kb(kb_q, top_k=20) if kb_q else get_all_articles()
 
-    st.subheader("API de OpenAI (Opcional)")
-    st.caption("Sin API key, el sistema usa clasificación por keywords. Con API key, usa GPT-4o-mini para clasificación más precisa.")
+    learned = sum(1 for a in get_all_articles()
+                  if "learned" in a.get("source","") or "conv_" in a.get("source",""))
+    manual = len(get_all_articles()) - learned
 
-    api_key = st.text_input("OpenAI API Key", type="password", value=st.session_state.get("api_key", ""))
-    if api_key:
-        st.session_state.api_key = api_key
-        st.success("✅ API key configurada. La clasificación usará GPT-4o-mini.")
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Total artículos", len(get_all_articles()))
+    m2.metric("📘 Base manual", manual)
+    m3.metric("🤖 Aprendidos por IA", learned)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    if not articles:
+        st.info("No hay artículos que coincidan.")
+
+    for a in articles:
+        is_learned = "learned" in a.get("source", "") or "conv_" in a.get("source", "")
+        src_label = "🤖 Aprendido" if is_learned else "📘 Base"
+        src_color = "#7c3aed" if is_learned else "#2563eb"
+
+        with st.expander(f"{src_label}  ·  **{a['titulo']}**  ·  {a['categoria']}"):
+            colb, coli = st.columns([3, 1])
+            with colb:
+                st.markdown(a["body"])
+            with coli:
+                st.markdown(
+                    f'<div style="font-size:12px;color:{src_color};font-weight:600;">{src_label}</div>',
+                    unsafe_allow_html=True,
+                )
+                st.markdown(f"**Actualizado:** {a.get('updated','—')}")
+                st.markdown(f"**Usos:** {a.get('times_used',0)}")
+                if a.get("tags"):
+                    tags_html = " ".join(f'<span class="kb-tag">{t}</span>' for t in a["tags"])
+                    st.markdown(f"<div>{tags_html}</div>", unsafe_allow_html=True)
+
+# ═══════════════════════════════════════════════════════════════════════
+#  CONFIGURACIÓN
+# ═══════════════════════════════════════════════════════════════════════
+elif "Config" in menu:
+    st.markdown('<div class="pg-title">⚙️ Configuración</div>', unsafe_allow_html=True)
+
+    st.subheader("🤖 API de OpenAI")
+    st.caption("Opcional. Sin API key el sistema usa clasificación por keywords (funcional para demo).")
+
+    new_key = st.text_input("OpenAI API Key", type="password",
+                             value=st.session_state.get("api_key", ""))
+    if new_key != st.session_state.get("api_key", ""):
+        st.session_state.api_key = new_key
+        st.success("✅ Clave guardada para esta sesión.")
+
+    if st.session_state.api_key:
+        st.success("🤖 Modo IA activo — GPT-4o-mini para chat, clasificación y auto-aprendizaje.")
     else:
-        st.info("ℹ️ Modo local activo — clasificación por keywords (funcional para demo)")
+        st.info("🔑 Modo local activo — keywords para clasificación. Agrega tu API key para IA completa.")
 
     st.divider()
-    st.subheader("Acerca del Sistema")
+    st.subheader("📐 Arquitectura del Sistema")
     st.markdown("""
-    **Sistema Inteligente de Tickets — NovaTech Solutions**
+| Componente | Tecnología |
+|---|---|
+| UI / Frontend | Streamlit |
+| Chat IA + RAG | OpenAI GPT-4o-mini (opcional) |
+| Base de datos | **SQLite** (`novatech.db`) |
+| Base de conocimiento | **Markdown** (estilo Obsidian) en `/knowledge/` |
+| Auto-aprendizaje | Conversaciones → nuevos artículos KB |
+| Clasificación offline | Keywords (sin dependencia de API) |
+| Detección sensible | Local, nunca se envía a APIs externas |
 
-    - **Clasificación automática** de tickets por categoría y prioridad
-    - **Resolución automática** para tickets comunes (contraseñas, VPN, software, impresoras)
-    - **Detección de contenido sensible** (RRHH) con routing confidencial
-    - **Escalamiento inteligente** a agentes humanos para casos complejos
-    - **Dashboard de métricas** para dirección
-
-    **Stack:** Python + Streamlit + OpenAI GPT-4o-mini (opcional)
-
-    **Base de conocimiento:** Basada en la wiki de Marcos Solís (~200 artículos en Notion)
+**Flujo de auto-aprendizaje:**
+```
+Chat → Conversación guardada en SQLite
+     → Cada 8 mensajes: GPT extrae problema+solución
+     → Nuevo artículo .md creado en /knowledge/
+     → Siguiente usuario con el mismo problema recibe mejor respuesta
+```
     """)
+
+    st.divider()
+    st.subheader("🗃️ Datos")
+    ca, cb = st.columns(2)
+    with ca:
+        if st.button("📥 Cargar datos demo", use_container_width=True):
+            load_demo_data()
+            st.success("✅ Datos demo cargados.")
+    with cb:
+        if st.button("🧹 Reset chat", use_container_width=True):
+            st.session_state.conv_id = None
+            st.session_state.chat_msgs = []
+            st.session_state.last_ticket = None
+            st.success("Chat reiniciado.")

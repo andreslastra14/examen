@@ -1,0 +1,23 @@
+# Database (generated at runtime)
+*.db
+novatech.db
+
+# Knowledge base (generated at runtime from init)
+knowledge/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
