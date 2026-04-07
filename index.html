@@ -7,91 +7,173 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
-        }
-      }
+      theme: { extend: { fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] } } }
     }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --dc-bg:        #0F0E17;
+      --dc-sidebar:   #13111C;
+      --dc-surface:   #1A1828;
+      --dc-elevated:  #231F35;
+      --dc-glass:     rgba(255,255,255,0.04);
+      --dc-border:    rgba(255,255,255,0.08);
+      --dc-border-hi: rgba(139,92,246,0.4);
+      --dc-text:      #F8F7FF;
+      --dc-muted:     #9D97B4;
+      --dc-faint:     #4D4667;
+      --dc-purple:    #8B5CF6;
+      --dc-indigo:    #6366F1;
+      --dc-pink:      #EC4899;
+      --dc-cyan:      #06B6D4;
+      --dc-green:     #10B981;
+      --dc-red:       #EF4444;
+      --dc-amber:     #F59E0B;
+    }
     * { font-family: 'Inter', system-ui, sans-serif; }
-    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+    ::-webkit-scrollbar-thumb { background: var(--dc-border-hi); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--dc-purple); }
+
+    body { background: var(--dc-bg); color: var(--dc-text); }
+    body::before {
+      content: '';
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(139,92,246,0.12), transparent);
+      pointer-events: none; z-index: 0;
+    }
+    body > * { position: relative; z-index: 1; }
+
     .fade { animation: fadeUp .25s ease-out; }
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
     .chat-bubble-user { border-radius: 18px 18px 4px 18px; }
     .chat-bubble-ai   { border-radius: 18px 18px 18px 4px; }
-    .nav-item { transition: background .15s, color .15s; }
-    .nav-item:hover { background: rgba(255,255,255,.06); }
-    .nav-item.active { background: rgba(255,255,255,.1); color: #f0f6fc; }
+
+    .glass-card {
+      background: var(--dc-glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--dc-border);
+      border-radius: 14px;
+    }
+
+    .nav-item { transition: background .15s, color .15s; border-radius: 10px; border: 1px solid transparent; }
+    .nav-item:hover { background: rgba(139,92,246,0.1); color: var(--dc-text); }
+    .nav-item.active { background: rgba(139,92,246,0.18); color: var(--dc-text) !important; border-color: rgba(139,92,246,0.25); }
+
     .badge { display:inline-flex;align-items:center;gap:3px;padding:2px 10px;border-radius:9999px;font-size:11px;font-weight:600;white-space:nowrap; }
-    .tk-card { transition: box-shadow .2s, border-color .2s; }
-    .tk-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.07); border-color: #c7d2de; }
+
+    .tk-card { transition: border-color .2s, box-shadow .2s; }
+    .tk-card:hover { border-color: rgba(139,92,246,0.4) !important; box-shadow: 0 0 24px rgba(139,92,246,0.1); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #8B5CF6, #6366F1);
+      color: white; border-radius: 10px; font-weight: 600;
+      transition: opacity .15s, box-shadow .15s;
+      box-shadow: 0 4px 15px rgba(139,92,246,0.35);
+    }
+    .btn-primary:hover { opacity: 0.88; box-shadow: 0 4px 22px rgba(139,92,246,0.55); }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #F8F7FF 40%, #9D97B4);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .gradient-text-purple {
+      background: linear-gradient(135deg, #A78BFA, #EC4899);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    .dc-input {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--dc-border);
+      color: var(--dc-text); border-radius: 10px; outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .dc-input::placeholder { color: var(--dc-faint); }
+    .dc-input:focus { border-color: rgba(139,92,246,0.5); box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
+    .dc-select {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--dc-border);
+      color: var(--dc-text); border-radius: 10px; outline: none;
+    }
+    .dc-select option { background: var(--dc-surface); color: var(--dc-text); }
+
+    .sidebar-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(139,92,246,0.25), transparent);
+      margin: 10px 16px;
+    }
+
+    .section-card {
+      background: var(--dc-surface);
+      border: 1px solid var(--dc-border);
+      border-radius: 14px;
+    }
+
+    label { color: var(--dc-muted); }
   </style>
 </head>
-<body class="h-full flex bg-slate-50 overflow-hidden">
+<body class="h-full flex overflow-hidden">
 
-<!-- SIDEBAR -->
-<aside class="w-64 shrink-0 h-full flex flex-col bg-gradient-to-b from-[#0d1117] to-[#1a2235] border-r border-[#21283a]">
+<!-- ─── SIDEBAR ───────────────────────────────────────────────── -->
+<aside class="w-64 shrink-0 h-full flex flex-col" style="background:var(--dc-sidebar);border-right:1px solid var(--dc-border);">
   <div class="px-5 pt-6 pb-2">
-    <div class="text-lg font-extrabold text-slate-100 tracking-tight">⚡ NovaTech</div>
-    <div class="text-[10px] text-slate-500 tracking-widest uppercase mt-0.5">SOPORTE INTELIGENTE CON IA</div>
+    <div class="text-lg font-extrabold tracking-tight"><span class="gradient-text-purple">⚡ NovaTech</span></div>
+    <div class="text-[10px] tracking-widest uppercase mt-0.5" style="color:var(--dc-faint);">SOPORTE INTELIGENTE CON IA</div>
   </div>
-  <div class="border-t border-[#21283a] mx-4 my-3"></div>
+  <div class="sidebar-divider"></div>
   <nav class="flex-1 px-3 space-y-1" id="nav-items">
-    <button onclick="go('chat')"      data-nav="chat"      class="nav-item active w-full text-left text-sm px-3 py-2.5 rounded-lg text-slate-400 flex items-center gap-2.5">💬 <span>Chat de Soporte</span></button>
-    <button onclick="go('tickets')"   data-nav="tickets"   class="nav-item w-full text-left text-sm px-3 py-2.5 rounded-lg text-slate-400 flex items-center gap-2.5">🎫 <span>Tickets</span></button>
-    <button onclick="go('dashboard')" data-nav="dashboard" class="nav-item w-full text-left text-sm px-3 py-2.5 rounded-lg text-slate-400 flex items-center gap-2.5">📊 <span>Dashboard</span></button>
-    <button onclick="go('kb')"        data-nav="kb"        class="nav-item w-full text-left text-sm px-3 py-2.5 rounded-lg text-slate-400 flex items-center gap-2.5">🧠 <span>Base de Conocimiento</span></button>
-    <button onclick="go('config')"    data-nav="config"    class="nav-item w-full text-left text-sm px-3 py-2.5 rounded-lg text-slate-400 flex items-center gap-2.5">⚙️ <span>Configuración</span></button>
+    <button onclick="go('chat')"      data-nav="chat"      class="nav-item active w-full text-left text-sm px-3 py-2.5 flex items-center gap-2.5" style="color:var(--dc-muted);">💬 <span>Chat de Soporte</span></button>
+    <button onclick="go('tickets')"   data-nav="tickets"   class="nav-item w-full text-left text-sm px-3 py-2.5 flex items-center gap-2.5" style="color:var(--dc-muted);">🎫 <span>Tickets</span></button>
+    <button onclick="go('dashboard')" data-nav="dashboard" class="nav-item w-full text-left text-sm px-3 py-2.5 flex items-center gap-2.5" style="color:var(--dc-muted);">📊 <span>Dashboard</span></button>
+    <button onclick="go('kb')"        data-nav="kb"        class="nav-item w-full text-left text-sm px-3 py-2.5 flex items-center gap-2.5" style="color:var(--dc-muted);">🧠 <span>Base de Conocimiento</span></button>
+    <button onclick="go('config')"    data-nav="config"    class="nav-item w-full text-left text-sm px-3 py-2.5 flex items-center gap-2.5" style="color:var(--dc-muted);">⚙️ <span>Configuración</span></button>
   </nav>
-  <div class="border-t border-[#21283a] mx-4 my-3"></div>
+  <div class="sidebar-divider"></div>
   <div class="px-5 pb-2">
-    <div class="text-[10px] text-slate-500 tracking-widest uppercase mb-3">Estado del sistema</div>
+    <div class="text-[10px] tracking-widest uppercase mb-3" style="color:var(--dc-faint);">Estado del sistema</div>
     <div id="sidebar-stats" class="space-y-2 text-[13px]"></div>
   </div>
-  <div class="border-t border-[#21283a] mx-4 my-3"></div>
+  <div class="sidebar-divider"></div>
   <div class="px-3 pb-4 grid grid-cols-2 gap-2">
-    <button onclick="loadDemo()" class="text-xs px-3 py-2 bg-[#21283a] hover:bg-[#2d3748] text-slate-400 rounded-lg border border-[#30394d] transition">📥 Demo</button>
-    <button onclick="resetChat()" class="text-xs px-3 py-2 bg-[#21283a] hover:bg-[#2d3748] text-slate-400 rounded-lg border border-[#30394d] transition">🗑 Chat</button>
+    <button onclick="loadDemo()" class="text-xs px-3 py-2 rounded-lg transition" style="background:rgba(255,255,255,0.05);border:1px solid var(--dc-border);color:var(--dc-muted);">📥 Demo</button>
+    <button onclick="resetChat()" class="text-xs px-3 py-2 rounded-lg transition" style="background:rgba(255,255,255,0.05);border:1px solid var(--dc-border);color:var(--dc-muted);">🗑 Chat</button>
   </div>
-  <div id="ai-badge" class="mx-4 mb-4 rounded-lg px-3 py-2 text-xs border border-[#30363d] bg-[#1c2333] text-slate-500">🔑 Modo local (keywords)</div>
+  <div id="ai-badge" class="mx-4 mb-4 rounded-xl px-3 py-2 text-xs" style="border:1px solid var(--dc-border);background:rgba(255,255,255,0.03);color:var(--dc-faint);">🔑 Modo local (keywords)</div>
 </aside>
 
-<!-- MAIN -->
+<!-- ─── MAIN ───────────────────────────────────────────────────── -->
 <main class="flex-1 overflow-y-auto">
 
 <!-- CHAT PAGE -->
 <section id="p-chat" class="h-full flex flex-col">
-  <div class="px-8 pt-6 pb-2">
-    <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">💬 Chat de Soporte</h1>
-    <p class="text-sm text-slate-500 mt-1">Cuéntame tu problema. Si puedo resolverlo lo hago aquí; si no, creo el ticket automáticamente.</p>
+  <div class="px-8 pt-7 pb-2">
+    <h1 class="text-2xl font-extrabold tracking-tight gradient-text">💬 Chat de Soporte</h1>
+    <p class="text-sm mt-1" style="color:var(--dc-muted);">Cuéntame tu problema. Si puedo resolverlo lo hago aquí; si no, creo el ticket automáticamente.</p>
   </div>
-  <div id="ticket-banner" class="hidden mx-8 mt-2 bg-emerald-50 border-l-4 border-emerald-500 rounded-r-lg px-4 py-3 text-sm text-emerald-800 font-medium fade"></div>
+  <div id="ticket-banner" class="hidden mx-8 mt-2 rounded-xl px-4 py-3 text-sm font-medium fade" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#34D399;"></div>
   <div id="chat-area" class="hidden flex-1 overflow-y-auto px-8 py-4 space-y-4"></div>
   <div id="chat-welcome" class="flex-1 flex items-center justify-center text-center px-8">
     <div>
       <div class="text-5xl mb-3">⚡</div>
-      <div class="text-xl font-bold text-slate-800">Hola, soy Nova</div>
-      <div class="text-sm text-slate-500 mt-1">Asistente inteligente de TI · NovaTech Solutions</div>
+      <div class="text-xl font-bold gradient-text-purple">Hola, soy Nova</div>
+      <div class="text-sm mt-1" style="color:var(--dc-muted);">Asistente inteligente de TI · NovaTech Solutions</div>
       <div class="flex gap-2 justify-center mt-5 flex-wrap">
-        <span class="badge bg-blue-100 text-blue-700">🔑 Contraseñas</span>
-        <span class="badge bg-emerald-100 text-emerald-700">🌐 VPN</span>
-        <span class="badge bg-purple-100 text-purple-700">💻 Software</span>
-        <span class="badge bg-amber-100 text-amber-700">🖨️ Impresoras</span>
-        <span class="badge bg-slate-100 text-slate-600">🖱️ Hardware</span>
+        <span class="badge" style="background:rgba(99,102,241,0.15);color:#818CF8;">🔑 Contraseñas</span>
+        <span class="badge" style="background:rgba(16,185,129,0.15);color:#34D399;">🌐 VPN</span>
+        <span class="badge" style="background:rgba(139,92,246,0.15);color:#A78BFA;">💻 Software</span>
+        <span class="badge" style="background:rgba(245,158,11,0.15);color:#FCD34D;">🖨️ Impresoras</span>
+        <span class="badge" style="background:rgba(255,255,255,0.06);color:var(--dc-muted);">🖱️ Hardware</span>
       </div>
     </div>
   </div>
   <form onsubmit="sendChat(event)" class="px-8 pb-6 pt-2">
     <div class="flex gap-3">
       <input id="chat-input" type="text" placeholder="Escribe tu problema o pregunta…"
-             class="flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none shadow-sm bg-white">
-      <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl text-sm font-semibold transition shadow-sm">Enviar</button>
+             class="flex-1 dc-input px-4 py-3 text-sm">
+      <button type="submit" class="btn-primary px-5 py-3 text-sm">Enviar</button>
     </div>
   </form>
 </section>
@@ -99,88 +181,110 @@
 <!-- TICKETS PAGE -->
 <section id="p-tickets" class="hidden px-8 py-6 fade">
   <div class="flex items-center justify-between mb-1">
-    <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">🎫 Gestión de Tickets</h1>
-    <button onclick="toggleForm()" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg font-semibold transition">＋ Nuevo</button>
+    <h1 class="text-2xl font-extrabold tracking-tight gradient-text">🎫 Gestión de Tickets</h1>
+    <button onclick="toggleForm()" class="btn-primary text-sm px-4 py-2">＋ Nuevo</button>
   </div>
-  <p class="text-sm text-slate-500 mb-5">Explora, filtra y ordena todos los tickets de soporte.</p>
-  <div id="new-ticket-form" class="hidden mb-6 bg-white border rounded-xl p-5 fade">
-    <h3 class="font-semibold text-slate-800 mb-4">➕ Crear Ticket Manualmente</h3>
+  <p class="text-sm mb-5" style="color:var(--dc-muted);">Explora, filtra y ordena todos los tickets de soporte.</p>
+
+  <div id="new-ticket-form" class="hidden mb-6 section-card p-5 fade">
+    <h3 class="font-semibold mb-4" style="color:var(--dc-text);">➕ Crear Ticket Manualmente</h3>
     <div class="grid grid-cols-3 gap-4 mb-4">
-      <div><label class="block text-xs font-medium text-slate-600 mb-1">Email</label><input id="f-email" placeholder="usuario@novatech.com" class="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"></div>
-      <div><label class="block text-xs font-medium text-slate-600 mb-1">Departamento</label><select id="f-dept" class="w-full border rounded-lg px-3 py-2 text-sm outline-none"><option>Desarrollo</option><option>Infraestructura</option><option>Operaciones</option><option>Ventas</option><option>Administración</option><option>RRHH</option><option>Dirección</option><option>QA</option><option>Diseño</option></select></div>
-      <div><label class="block text-xs font-medium text-slate-600 mb-1">Oficina</label><select id="f-office" class="w-full border rounded-lg px-3 py-2 text-sm outline-none"><option>Monterrey</option><option>Guadalajara</option></select></div>
+      <div><label class="block text-xs font-medium mb-1">Email</label><input id="f-email" placeholder="usuario@novatech.com" class="w-full dc-input px-3 py-2 text-sm"></div>
+      <div><label class="block text-xs font-medium mb-1">Departamento</label><select id="f-dept" class="w-full dc-select px-3 py-2 text-sm"><option>Desarrollo</option><option>Infraestructura</option><option>Operaciones</option><option>Ventas</option><option>Administración</option><option>RRHH</option><option>Dirección</option><option>QA</option><option>Diseño</option></select></div>
+      <div><label class="block text-xs font-medium mb-1">Oficina</label><select id="f-office" class="w-full dc-select px-3 py-2 text-sm"><option>Monterrey</option><option>Guadalajara</option></select></div>
     </div>
     <div class="grid grid-cols-2 gap-4 mb-4">
-      <div><label class="block text-xs font-medium text-slate-600 mb-1">Asunto</label><input id="f-subject" placeholder="Describe brevemente…" class="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"></div>
-      <div><label class="block text-xs font-medium text-slate-600 mb-1">Prioridad</label><select id="f-pri" class="w-full border rounded-lg px-3 py-2 text-sm outline-none"><option value="">Auto-detectar</option><option>Crítica</option><option>Alta</option><option>Media</option><option>Baja</option></select></div>
+      <div><label class="block text-xs font-medium mb-1">Asunto</label><input id="f-subject" placeholder="Describe brevemente…" class="w-full dc-input px-3 py-2 text-sm"></div>
+      <div><label class="block text-xs font-medium mb-1">Prioridad</label><select id="f-pri" class="w-full dc-select px-3 py-2 text-sm"><option value="">Auto-detectar</option><option>Crítica</option><option>Alta</option><option>Media</option><option>Baja</option></select></div>
     </div>
-    <div class="mb-4"><label class="block text-xs font-medium text-slate-600 mb-1">Descripción</label><textarea id="f-body" rows="3" placeholder="Detalla el problema…" class="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"></textarea></div>
-    <button onclick="createManualTicket()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-semibold transition">✅ Crear Ticket</button>
+    <div class="mb-4"><label class="block text-xs font-medium mb-1">Descripción</label><textarea id="f-body" rows="3" placeholder="Detalla el problema…" class="w-full dc-input px-3 py-2 text-sm resize-none"></textarea></div>
+    <button onclick="createManualTicket()" class="btn-primary px-5 py-2 text-sm">✅ Crear Ticket</button>
   </div>
-  <input id="tk-search" oninput="renderTickets()" placeholder="🔍  Buscar por asunto, remitente o descripción…" class="w-full border rounded-xl px-4 py-3 text-sm mb-4 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm bg-white">
+
+  <input id="tk-search" oninput="renderTickets()" placeholder="🔍  Buscar por asunto, remitente o descripción…"
+         class="w-full dc-input px-4 py-3 text-sm mb-4">
   <div class="grid grid-cols-4 gap-3 mb-4">
-    <select id="flt-pri" onchange="renderTickets()" class="border rounded-lg px-3 py-2 text-sm outline-none text-slate-600"><option value="">Todas las prioridades</option><option>Crítica</option><option>Alta</option><option>Media</option><option>Baja</option></select>
-    <select id="flt-est" onchange="renderTickets()" class="border rounded-lg px-3 py-2 text-sm outline-none text-slate-600"><option value="">Todos los estados</option><option>Resuelto (Auto)</option><option>Escalado a Marcos</option><option>En cola</option><option>Esperando aprobación</option><option>Derivado a RRHH</option></select>
-    <select id="flt-cat" onchange="renderTickets()" class="border rounded-lg px-3 py-2 text-sm outline-none text-slate-600"><option value="">Todas las categorías</option><option>Reset de Contraseñas</option><option>VPN / Conectividad</option><option>Software</option><option>Permisos de Acceso</option><option>Hardware</option><option>Impresoras</option><option>Servidor/Infraestructura</option></select>
-    <select id="flt-sort" onchange="renderTickets()" class="border rounded-lg px-3 py-2 text-sm outline-none text-slate-600"><option value="newest">Más reciente</option><option value="oldest">Más antiguo</option><option value="priHigh">Mayor prioridad</option><option value="priLow">Menor prioridad</option></select>
+    <select id="flt-pri" onchange="renderTickets()" class="dc-select px-3 py-2 text-sm"><option value="">Todas las prioridades</option><option>Crítica</option><option>Alta</option><option>Media</option><option>Baja</option></select>
+    <select id="flt-est" onchange="renderTickets()" class="dc-select px-3 py-2 text-sm"><option value="">Todos los estados</option><option>Resuelto (Auto)</option><option>Escalado a Marcos</option><option>En cola</option><option>Esperando aprobación</option><option>Derivado a RRHH</option></select>
+    <select id="flt-cat" onchange="renderTickets()" class="dc-select px-3 py-2 text-sm"><option value="">Todas las categorías</option><option>Reset de Contraseñas</option><option>VPN / Conectividad</option><option>Software</option><option>Permisos de Acceso</option><option>Hardware</option><option>Impresoras</option><option>Servidor/Infraestructura</option></select>
+    <select id="flt-sort" onchange="renderTickets()" class="dc-select px-3 py-2 text-sm"><option value="newest">Más reciente</option><option value="oldest">Más antiguo</option><option value="priHigh">Mayor prioridad</option><option value="priLow">Menor prioridad</option></select>
   </div>
-  <p id="tk-count" class="text-xs text-slate-500 mb-3"></p>
+  <p id="tk-count" class="text-xs mb-3" style="color:var(--dc-faint);"></p>
   <div id="tk-list"></div>
-  <p id="tk-empty" class="hidden text-center text-slate-400 py-16">No hay tickets. Usa el chat o carga demo.</p>
+  <p id="tk-empty" class="hidden text-center py-16" style="color:var(--dc-faint);">No hay tickets. Usa el chat o carga demo.</p>
 </section>
 
 <!-- DASHBOARD PAGE -->
 <section id="p-dashboard" class="hidden px-8 py-6 fade">
-  <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">📊 Dashboard Analítico</h1>
-  <p class="text-sm text-slate-500 mt-1 mb-6">Métricas en tiempo real del sistema de soporte.</p>
-  <div id="dash-empty" class="text-center text-slate-400 py-16">Carga datos demo o crea tickets para ver métricas.</div>
+  <h1 class="text-2xl font-extrabold tracking-tight gradient-text">📊 Dashboard Analítico</h1>
+  <p class="text-sm mt-1 mb-6" style="color:var(--dc-muted);">Métricas en tiempo real del sistema de soporte.</p>
+  <div id="dash-empty" class="text-center py-16" style="color:var(--dc-faint);">Carga datos demo o crea tickets para ver métricas.</div>
   <div id="dash-content" class="hidden">
     <div class="grid grid-cols-5 gap-4 mb-6" id="kpi-row"></div>
     <div class="grid grid-cols-2 gap-6 mb-6">
-      <div class="bg-white rounded-xl border p-5 shadow-sm"><h3 class="text-sm font-semibold text-slate-700 mb-3">Tickets por Categoría</h3><canvas id="c-cat"></canvas></div>
-      <div class="bg-white rounded-xl border p-5 shadow-sm"><h3 class="text-sm font-semibold text-slate-700 mb-3">Tickets por Estado</h3><canvas id="c-est"></canvas></div>
+      <div class="section-card p-5"><h3 class="text-sm font-semibold mb-3" style="color:var(--dc-muted);">Tickets por Categoría</h3><canvas id="c-cat"></canvas></div>
+      <div class="section-card p-5"><h3 class="text-sm font-semibold mb-3" style="color:var(--dc-muted);">Tickets por Estado</h3><canvas id="c-est"></canvas></div>
     </div>
     <div class="grid grid-cols-5 gap-6">
-      <div class="col-span-2 bg-white rounded-xl border p-5 shadow-sm">
-        <h3 class="text-sm font-semibold text-slate-700 mb-3">🔥 Issues Más Comunes</h3>
-        <table class="w-full text-sm"><thead><tr class="text-left text-xs text-slate-500 border-b"><th class="pb-2">Categoría</th><th class="pb-2 text-right">Tickets</th><th class="pb-2 text-right">%</th></tr></thead><tbody id="top-issues"></tbody></table>
+      <div class="col-span-2 section-card p-5">
+        <h3 class="text-sm font-semibold mb-3" style="color:var(--dc-muted);">🔥 Issues Más Comunes</h3>
+        <table class="w-full text-sm">
+          <thead><tr class="text-left text-xs border-b" style="color:var(--dc-faint);border-color:var(--dc-border);">
+            <th class="pb-2">Categoría</th><th class="pb-2 text-right">Tickets</th><th class="pb-2 text-right">%</th>
+          </tr></thead>
+          <tbody id="top-issues"></tbody>
+        </table>
       </div>
-      <div class="col-span-3 bg-white rounded-xl border p-5 shadow-sm"><h3 class="text-sm font-semibold text-slate-700 mb-3">Por Departamento</h3><canvas id="c-dept"></canvas></div>
+      <div class="col-span-3 section-card p-5">
+        <h3 class="text-sm font-semibold mb-3" style="color:var(--dc-muted);">Por Departamento</h3>
+        <canvas id="c-dept"></canvas>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- KB PAGE -->
 <section id="p-kb" class="hidden px-8 py-6 fade">
-  <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">🧠 Base de Conocimiento</h1>
-  <p class="text-sm text-slate-500 mt-1 mb-5">Artículos de soporte — base manual + auto-aprendizaje.</p>
-  <input id="kb-search" oninput="renderKB()" placeholder="🔍  Buscar artículos…" class="w-full border rounded-xl px-4 py-3 text-sm mb-4 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm bg-white">
+  <h1 class="text-2xl font-extrabold tracking-tight gradient-text">🧠 Base de Conocimiento</h1>
+  <p class="text-sm mt-1 mb-5" style="color:var(--dc-muted);">Artículos de soporte — base manual + auto-aprendizaje.</p>
+  <input id="kb-search" oninput="renderKB()" placeholder="🔍  Buscar artículos…"
+         class="w-full dc-input px-4 py-3 text-sm mb-4">
   <div class="grid grid-cols-3 gap-3 mb-5">
-    <div class="bg-white border rounded-xl px-4 py-3 text-center"><div class="text-2xl font-bold text-slate-800" id="kb-total">0</div><div class="text-xs text-slate-500">Total artículos</div></div>
-    <div class="bg-white border rounded-xl px-4 py-3 text-center"><div class="text-2xl font-bold text-blue-600" id="kb-manual">0</div><div class="text-xs text-slate-500">📘 Base manual</div></div>
-    <div class="bg-white border rounded-xl px-4 py-3 text-center"><div class="text-2xl font-bold text-purple-600" id="kb-learned">0</div><div class="text-xs text-slate-500">🤖 Aprendidos</div></div>
+    <div class="section-card px-4 py-3 text-center">
+      <div class="text-2xl font-bold gradient-text" id="kb-total">0</div>
+      <div class="text-xs mt-0.5" style="color:var(--dc-muted);">Total artículos</div>
+    </div>
+    <div class="section-card px-4 py-3 text-center">
+      <div class="text-2xl font-bold" id="kb-manual" style="color:#818CF8;">0</div>
+      <div class="text-xs mt-0.5" style="color:var(--dc-muted);">📘 Base manual</div>
+    </div>
+    <div class="section-card px-4 py-3 text-center">
+      <div class="text-2xl font-bold" id="kb-learned" style="color:#A78BFA;">0</div>
+      <div class="text-xs mt-0.5" style="color:var(--dc-muted);">🤖 Aprendidos</div>
+    </div>
   </div>
   <div id="kb-list" class="space-y-3"></div>
 </section>
 
 <!-- CONFIG PAGE -->
 <section id="p-config" class="hidden px-8 py-6 fade max-w-2xl">
-  <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">⚙️ Configuración</h1>
-  <div class="mt-6 bg-white border rounded-xl p-5">
-    <h3 class="font-semibold text-slate-800 mb-1">🤖 API de OpenAI</h3>
-    <p class="text-xs text-slate-500 mb-3">Opcional. Sin API key el chat usa respuestas basadas en KB local.</p>
-    <input id="api-key" type="password" placeholder="sk-..." oninput="saveApiKey()" class="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 mb-2">
-    <div id="api-status" class="text-xs text-slate-500"></div>
+  <h1 class="text-2xl font-extrabold tracking-tight gradient-text">⚙️ Configuración</h1>
+  <div class="mt-6 section-card p-5">
+    <h3 class="font-semibold mb-1" style="color:var(--dc-text);">🤖 API de OpenAI</h3>
+    <p class="text-xs mb-3" style="color:var(--dc-muted);">Opcional. Sin API key el chat usa respuestas basadas en KB local.</p>
+    <input id="api-key" type="password" placeholder="sk-..." oninput="saveApiKey()"
+           class="w-full dc-input px-3 py-2 text-sm mb-2">
+    <div id="api-status" class="text-xs" style="color:var(--dc-faint);"></div>
   </div>
-  <div class="mt-6 bg-white border rounded-xl p-5">
-    <h3 class="font-semibold text-slate-800 mb-3">📐 Arquitectura</h3>
-    <div class="text-sm text-slate-600 space-y-2">
-      <div class="flex justify-between border-b pb-2"><span class="text-slate-500">UI</span><span class="font-medium">HTML + Tailwind CSS + Chart.js</span></div>
-      <div class="flex justify-between border-b pb-2"><span class="text-slate-500">Chat IA</span><span class="font-medium">OpenAI GPT-4o-mini (opcional)</span></div>
-      <div class="flex justify-between border-b pb-2"><span class="text-slate-500">Persistencia</span><span class="font-medium">localStorage (web) + SQLite (Streamlit)</span></div>
-      <div class="flex justify-between border-b pb-2"><span class="text-slate-500">KB</span><span class="font-medium">Markdown (estilo Obsidian)</span></div>
-      <div class="flex justify-between border-b pb-2"><span class="text-slate-500">Clasificación</span><span class="font-medium">Keywords offline / GPT-4o-mini</span></div>
-      <div class="flex justify-between"><span class="text-slate-500">Deploy</span><span class="font-medium">Vercel (web) + Streamlit (full)</span></div>
+  <div class="mt-6 section-card p-5">
+    <h3 class="font-semibold mb-3" style="color:var(--dc-text);">📐 Arquitectura</h3>
+    <div class="text-sm space-y-2" style="color:var(--dc-muted);">
+      <div class="flex justify-between pb-2" style="border-bottom:1px solid var(--dc-border);"><span>UI</span><span class="font-medium" style="color:var(--dc-text);">HTML + Tailwind CSS + Chart.js</span></div>
+      <div class="flex justify-between pb-2" style="border-bottom:1px solid var(--dc-border);"><span>Chat IA</span><span class="font-medium" style="color:var(--dc-text);">OpenAI GPT-4o-mini (opcional)</span></div>
+      <div class="flex justify-between pb-2" style="border-bottom:1px solid var(--dc-border);"><span>Persistencia</span><span class="font-medium" style="color:var(--dc-text);">localStorage (web) + SQLite (Streamlit)</span></div>
+      <div class="flex justify-between pb-2" style="border-bottom:1px solid var(--dc-border);"><span>KB</span><span class="font-medium" style="color:var(--dc-text);">Markdown (estilo Obsidian)</span></div>
+      <div class="flex justify-between pb-2" style="border-bottom:1px solid var(--dc-border);"><span>Clasificación</span><span class="font-medium" style="color:var(--dc-text);">Keywords offline / GPT-4o-mini</span></div>
+      <div class="flex justify-between"><span>Deploy</span><span class="font-medium" style="color:var(--dc-text);">Vercel (web) + Streamlit (full)</span></div>
     </div>
   </div>
 </section>
@@ -289,16 +393,22 @@ function renderChat() {
   const welcome = document.getElementById('chat-welcome');
   if (!chatMsgs.length) { area.classList.add('hidden'); welcome.classList.remove('hidden'); return; }
   welcome.classList.add('hidden'); area.classList.remove('hidden');
-  // Build chat DOM safely
   area.textContent = '';
   chatMsgs.forEach(function(m) {
     var row = document.createElement('div');
     row.className = 'flex ' + (m.role === 'user' ? 'justify-end' : 'justify-start');
     var bubble = document.createElement('div');
-    bubble.className = (m.role === 'user'
-      ? 'chat-bubble-user bg-blue-600 text-white'
-      : 'chat-bubble-ai bg-white border border-slate-200 text-slate-800 shadow-sm')
-      + ' px-4 py-3 max-w-[70%] text-sm leading-relaxed';
+    if (m.role === 'user') {
+      bubble.className = 'chat-bubble-user px-4 py-3 max-w-[70%] text-sm leading-relaxed text-white';
+      bubble.style.background = 'linear-gradient(135deg, #8B5CF6, #6366F1)';
+      bubble.style.boxShadow = '0 4px 15px rgba(139,92,246,0.3)';
+    } else {
+      bubble.className = 'chat-bubble-ai px-4 py-3 max-w-[70%] text-sm leading-relaxed';
+      bubble.style.background = 'rgba(255,255,255,0.06)';
+      bubble.style.border = '1px solid rgba(255,255,255,0.1)';
+      bubble.style.color = 'var(--dc-text)';
+      bubble.style.backdropFilter = 'blur(8px)';
+    }
     bubble.textContent = m.content;
     row.appendChild(bubble);
     area.appendChild(row);
@@ -415,60 +525,123 @@ function renderTickets() {
   if (!list.length) { el.textContent = ''; empty.classList.remove('hidden'); return; }
   empty.classList.add('hidden');
 
-  // Build ticket DOM safely
   el.textContent = '';
   list.forEach(function(t) {
     var card = document.createElement('div');
-    card.className = 'tk-card rounded-xl p-4 mb-3 ';
+    card.className = 'tk-card rounded-2xl p-4 mb-3';
+    card.style.background = 'var(--dc-surface)';
+    card.style.border = '1px solid var(--dc-border)';
 
     if (t.sensible) {
-      card.className += 'bg-red-50 border border-red-200';
+      card.style.background = 'rgba(239,68,68,0.08)';
+      card.style.border = '1px solid rgba(239,68,68,0.25)';
       var top = document.createElement('div'); top.className = 'flex justify-between items-center';
-      var idEl = document.createElement('span'); idEl.className = 'font-mono text-xs font-bold text-red-700'; idEl.textContent = t.id;
-      var badge = document.createElement('span'); badge.className = 'badge bg-red-200 text-red-800'; badge.textContent = '🔒 CONFIDENCIAL';
+      var idEl = document.createElement('span');
+      idEl.className = 'font-mono text-xs font-bold';
+      idEl.style.color = '#F87171';
+      idEl.textContent = t.id;
+      var badge = document.createElement('span');
+      badge.className = 'badge';
+      badge.style.background = 'rgba(239,68,68,0.15)';
+      badge.style.color = '#F87171';
+      badge.textContent = '🔒 CONFIDENCIAL';
       top.appendChild(idEl); top.appendChild(badge); card.appendChild(top);
-      var msg = document.createElement('p'); msg.className = 'text-sm text-red-600 mt-2'; msg.textContent = 'Contenido oculto — solo visible para RRHH';
+      var msg = document.createElement('p');
+      msg.className = 'text-sm mt-2';
+      msg.style.color = '#F87171';
+      msg.textContent = 'Contenido oculto — solo visible para RRHH';
       card.appendChild(msg);
-      var dateEl = document.createElement('p'); dateEl.className = 'text-xs text-red-400 mt-1'; dateEl.textContent = t.fecha;
+      var dateEl = document.createElement('p');
+      dateEl.className = 'text-xs mt-1';
+      dateEl.style.color = 'rgba(239,68,68,0.5)';
+      dateEl.textContent = t.fecha;
       card.appendChild(dateEl);
     } else {
-      card.className += 'bg-white border';
       // Header row
       var hdr = document.createElement('div'); hdr.className = 'flex justify-between items-center mb-2';
       var left = document.createElement('div'); left.className = 'flex items-center gap-2';
-      var idSpan = document.createElement('span'); idSpan.className = 'font-mono text-xs font-bold text-slate-500'; idSpan.textContent = t.id;
+
+      var idSpan = document.createElement('span');
+      idSpan.className = 'font-mono text-xs font-bold';
+      idSpan.style.color = 'var(--dc-faint)';
+      idSpan.textContent = t.id;
       left.appendChild(idSpan);
-      var pCls = {'Crítica':'bg-red-100 text-red-700','Alta':'bg-orange-100 text-orange-700','Media':'bg-amber-100 text-amber-800','Baja':'bg-emerald-100 text-emerald-700'}[t.pri] || 'bg-slate-100 text-slate-600';
-      var priBadge = document.createElement('span'); priBadge.className = 'badge ' + pCls; priBadge.textContent = t.pri;
+
+      var priColors = {
+        'Crítica': {bg:'rgba(239,68,68,0.15)',   text:'#F87171'},
+        'Alta':    {bg:'rgba(249,115,22,0.15)',   text:'#FB923C'},
+        'Media':   {bg:'rgba(245,158,11,0.15)',   text:'#FCD34D'},
+        'Baja':    {bg:'rgba(16,185,129,0.15)',   text:'#34D399'},
+      };
+      var pC = priColors[t.pri] || {bg:'rgba(255,255,255,0.08)', text:'var(--dc-muted)'};
+      var priBadge = document.createElement('span');
+      priBadge.className = 'badge';
+      priBadge.style.background = pC.bg;
+      priBadge.style.color = pC.text;
+      priBadge.textContent = t.pri;
       left.appendChild(priBadge);
-      var catBadge = document.createElement('span'); catBadge.className = 'badge bg-slate-100 text-slate-600'; catBadge.textContent = t.cat || '—';
+
+      var catBadge = document.createElement('span');
+      catBadge.className = 'badge';
+      catBadge.style.background = 'rgba(255,255,255,0.06)';
+      catBadge.style.color = 'var(--dc-muted)';
+      catBadge.textContent = t.cat || '—';
       left.appendChild(catBadge);
+
       var originSpan = document.createElement('span'); originSpan.className = 'text-xs'; originSpan.textContent = t.origen === 'chat' ? '💬' : '📝';
       left.appendChild(originSpan);
       hdr.appendChild(left);
-      var sCls = (t.estado||'').includes('Resuelto') ? 'bg-emerald-100 text-emerald-700' : (t.estado||'').includes('Escalado') ? 'bg-red-100 text-red-700' : (t.estado||'').includes('aprobación') ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700';
-      var stBadge = document.createElement('span'); stBadge.className = 'badge ' + sCls; stBadge.textContent = t.estado;
+
+      var estColors = {
+        'Resuelto (Auto)':       {bg:'rgba(16,185,129,0.15)',  text:'#34D399'},
+        'Escalado a Marcos':     {bg:'rgba(239,68,68,0.15)',   text:'#F87171'},
+        'Derivado a RRHH':       {bg:'rgba(139,92,246,0.15)', text:'#A78BFA'},
+        'Esperando aprobación':  {bg:'rgba(245,158,11,0.15)',  text:'#FCD34D'},
+        'En cola':               {bg:'rgba(99,102,241,0.15)',  text:'#818CF8'},
+      };
+      var eC = estColors[t.estado] || {bg:'rgba(255,255,255,0.08)', text:'var(--dc-muted)'};
+      var stBadge = document.createElement('span');
+      stBadge.className = 'badge';
+      stBadge.style.background = eC.bg;
+      stBadge.style.color = eC.text;
+      stBadge.textContent = t.estado;
       hdr.appendChild(stBadge);
       card.appendChild(hdr);
-      // Title
-      var title = document.createElement('h3'); title.className = 'font-semibold text-slate-800'; title.textContent = t.asunto;
+
+      var title = document.createElement('h3');
+      title.className = 'font-semibold';
+      title.style.color = 'var(--dc-text)';
+      title.textContent = t.asunto;
       card.appendChild(title);
-      // Body
-      var body = document.createElement('p'); body.className = 'text-sm text-slate-500 mt-1';
+
+      var body = document.createElement('p');
+      body.className = 'text-sm mt-1';
+      body.style.color = 'var(--dc-muted)';
       body.textContent = (t.cuerpo||'').slice(0,140) + ((t.cuerpo||'').length > 140 ? '…' : '');
       card.appendChild(body);
-      // Meta
-      var meta = document.createElement('div'); meta.className = 'flex gap-4 mt-2 text-xs text-slate-400';
+
+      var meta = document.createElement('div');
+      meta.className = 'flex gap-4 mt-2 text-xs';
+      meta.style.color = 'var(--dc-faint)';
       meta.textContent = [t.remitente, t.departamento, t.oficina, t.fecha, 'IA: '+t.conf+'%'].filter(Boolean).join(' · ');
       card.appendChild(meta);
-      // KB auto-response
+
       if (t.auto && t.kb) {
         var kbArt = KB.find(function(x){return x.key===t.kb;});
         if (kbArt) {
-          var resp = document.createElement('div'); resp.className = 'mt-3 bg-emerald-50 border border-emerald-200 rounded-lg p-3';
-          var rTitle = document.createElement('p'); rTitle.className = 'text-xs font-semibold text-emerald-700 mb-1'; rTitle.textContent = '✅ ' + kbArt.titulo;
+          var resp = document.createElement('div');
+          resp.className = 'mt-3 rounded-xl p-3';
+          resp.style.background = 'rgba(16,185,129,0.08)';
+          resp.style.border = '1px solid rgba(16,185,129,0.2)';
+          var rTitle = document.createElement('p');
+          rTitle.className = 'text-xs font-semibold mb-1';
+          rTitle.style.color = '#34D399';
+          rTitle.textContent = '✅ ' + kbArt.titulo;
           resp.appendChild(rTitle);
-          var rBody = document.createElement('pre'); rBody.className = 'text-xs text-emerald-800 whitespace-pre-wrap font-sans'; rBody.textContent = kbArt.body;
+          var rBody = document.createElement('pre');
+          rBody.className = 'text-xs whitespace-pre-wrap font-sans';
+          rBody.style.color = 'rgba(52,211,153,0.8)';
+          rBody.textContent = kbArt.body;
           resp.appendChild(rBody);
           card.appendChild(resp);
         }
@@ -492,60 +665,78 @@ function renderDashboard() {
   var criticos = tickets.filter(function(t){return t.pri==='Crítica';}).length;
   var fromChat = tickets.filter(function(t){return t.origen==='chat';}).length;
 
-  // KPIs (safe DOM)
   var kpiRow = document.getElementById('kpi-row');
   kpiRow.textContent = '';
   var kpis = [
-    {ico:'🎫',val:total,lbl:'Total Tickets',cls:'border-l-blue-500'},
-    {ico:'🤖',val:autoRes,lbl:'Auto-resueltos',cls:'border-l-emerald-500',delta:'▲ '+(total?Math.round(autoRes/total*100):0)+'%'},
-    {ico:'👷',val:escalados,lbl:'Escalados',cls:'border-l-amber-500'},
-    {ico:'🔴',val:criticos,lbl:'Críticos',cls:'border-l-red-500'},
-    {ico:'💬',val:fromChat,lbl:'Desde Chat',cls:'border-l-purple-500'},
+    {ico:'🎫',val:total,   lbl:'Total Tickets',  left:'#6366F1'},
+    {ico:'🤖',val:autoRes, lbl:'Auto-resueltos', left:'#10B981', delta:'▲ '+(total?Math.round(autoRes/total*100):0)+'%'},
+    {ico:'👷',val:escalados,lbl:'Escalados',      left:'#F59E0B'},
+    {ico:'🔴',val:criticos, lbl:'Críticos',       left:'#EF4444'},
+    {ico:'💬',val:fromChat, lbl:'Desde Chat',     left:'#8B5CF6'},
   ];
   kpis.forEach(function(k) {
-    var d = document.createElement('div'); d.className = 'bg-white rounded-xl border border-l-4 ' + k.cls + ' p-4 shadow-sm';
+    var d = document.createElement('div');
+    d.className = 'rounded-2xl p-4';
+    d.style.background = 'var(--dc-surface)';
+    d.style.border = '1px solid var(--dc-border)';
+    d.style.borderLeft = '3px solid ' + k.left;
     var ico = document.createElement('div'); ico.className = 'text-xl mb-1'; ico.textContent = k.ico; d.appendChild(ico);
-    var val = document.createElement('div'); val.className = 'text-2xl font-extrabold text-slate-900'; val.textContent = k.val; d.appendChild(val);
-    var lbl = document.createElement('div'); lbl.className = 'text-[11px] font-semibold text-slate-500 uppercase tracking-wide'; lbl.textContent = k.lbl; d.appendChild(lbl);
-    if (k.delta) { var del = document.createElement('div'); del.className = 'text-xs font-semibold text-emerald-600 mt-1'; del.textContent = k.delta; d.appendChild(del); }
+    var val = document.createElement('div');
+    val.className = 'text-2xl font-extrabold';
+    val.style.color = 'var(--dc-text)';
+    val.textContent = k.val;
+    d.appendChild(val);
+    var lbl = document.createElement('div');
+    lbl.className = 'text-[11px] font-semibold uppercase tracking-wide mt-0.5';
+    lbl.style.color = 'var(--dc-faint)';
+    lbl.textContent = k.lbl;
+    d.appendChild(lbl);
+    if (k.delta) {
+      var del = document.createElement('div');
+      del.className = 'text-xs font-semibold mt-1';
+      del.style.color = '#34D399';
+      del.textContent = k.delta;
+      d.appendChild(del);
+    }
     kpiRow.appendChild(d);
   });
 
-  // Charts
   Object.values(charts).forEach(function(c){c.destroy();}); charts = {};
+
+  Chart.defaults.color = '#9D97B4';
+  Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
 
   var cats = {}; tickets.filter(function(t){return !t.sensible;}).forEach(function(t){cats[t.cat||'Otros']=(cats[t.cat||'Otros']||0)+1;});
   charts.cat = new Chart(document.getElementById('c-cat'), {
     type:'doughnut',
-    data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats),backgroundColor:['#3b82f6','#22c55e','#f59e0b','#a855f7','#ef4444','#06b6d4','#6366f1','#94a3b8']}]},
-    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11,family:'Inter'}}}}}
+    data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats),backgroundColor:['#6366F1','#8B5CF6','#EC4899','#06B6D4','#10B981','#F59E0B','#EF4444','#A78BFA'],borderWidth:0}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11,family:'Inter'},color:'#9D97B4',boxWidth:10}}}}
   });
 
   var ests = {}; tickets.forEach(function(t){ests[t.estado]=(ests[t.estado]||0)+1;});
-  var estColors = {'Resuelto (Auto)':'#22c55e','Escalado a Marcos':'#ef4444','En cola':'#3b82f6','Derivado a RRHH':'#a855f7','Esperando aprobación':'#f59e0b'};
+  var estColors2 = {'Resuelto (Auto)':'#10B981','Escalado a Marcos':'#EF4444','En cola':'#6366F1','Derivado a RRHH':'#8B5CF6','Esperando aprobación':'#F59E0B'};
   charts.est = new Chart(document.getElementById('c-est'), {
     type:'bar',
-    data:{labels:Object.keys(ests),datasets:[{data:Object.values(ests),backgroundColor:Object.keys(ests).map(function(k){return estColors[k]||'#94a3b8';}),borderRadius:6}]},
+    data:{labels:Object.keys(ests),datasets:[{data:Object.values(ests),backgroundColor:Object.keys(ests).map(function(k){return estColors2[k]||'#4D4667';}),borderRadius:6}]},
     options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{ticks:{font:{size:10}}}}}
   });
 
-  // Top issues (safe DOM)
   var tbody = document.getElementById('top-issues');
   tbody.textContent = '';
   Object.entries(cats).sort(function(a,b){return b[1]-a[1];}).forEach(function(pair) {
-    var tr = document.createElement('tr'); tr.className = 'border-b last:border-0';
-    var td1 = document.createElement('td'); td1.className = 'py-2 text-slate-700'; td1.textContent = pair[0];
-    var td2 = document.createElement('td'); td2.className = 'py-2 text-right font-semibold'; td2.textContent = pair[1];
-    var td3 = document.createElement('td'); td3.className = 'py-2 text-right text-slate-500'; td3.textContent = Math.round(pair[1]/total*100)+'%';
+    var tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid var(--dc-border)';
+    var td1 = document.createElement('td'); td1.className = 'py-2'; td1.style.color = 'var(--dc-muted)'; td1.textContent = pair[0];
+    var td2 = document.createElement('td'); td2.className = 'py-2 text-right font-semibold'; td2.style.color = 'var(--dc-text)'; td2.textContent = pair[1];
+    var td3 = document.createElement('td'); td3.className = 'py-2 text-right'; td3.style.color = 'var(--dc-faint)'; td3.textContent = Math.round(pair[1]/total*100)+'%';
     tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tbody.appendChild(tr);
   });
 
-  // Dept chart
   var depts = {}; tickets.filter(function(t){return !t.sensible&&t.departamento;}).forEach(function(t){depts[t.departamento]=(depts[t.departamento]||0)+1;});
   var deptSorted = Object.entries(depts).sort(function(a,b){return b[1]-a[1];});
   charts.dept = new Chart(document.getElementById('c-dept'), {
     type:'bar',
-    data:{labels:deptSorted.map(function(d){return d[0];}),datasets:[{data:deptSorted.map(function(d){return d[1];}),backgroundColor:'#3b82f6',borderRadius:6}]},
+    data:{labels:deptSorted.map(function(d){return d[0];}),datasets:[{data:deptSorted.map(function(d){return d[1];}),backgroundColor:'#6366F1',borderRadius:6}]},
     options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1}}}}
   });
 }
@@ -563,25 +754,52 @@ function renderKB() {
   var el = document.getElementById('kb-list');
   el.textContent = '';
   arts.forEach(function(a) {
-    var card = document.createElement('div'); card.className = 'bg-white border rounded-xl p-5 tk-card';
-    // Header
+    var card = document.createElement('div');
+    card.className = 'tk-card rounded-2xl p-5';
+    card.style.background = 'var(--dc-surface)';
+    card.style.border = '1px solid var(--dc-border)';
+
     var hdr = document.createElement('div'); hdr.className = 'flex justify-between items-start mb-3';
     var info = document.createElement('div');
-    var h3 = document.createElement('h3'); h3.className = 'font-semibold text-slate-800'; h3.textContent = a.titulo; info.appendChild(h3);
-    var catP = document.createElement('p'); catP.className = 'text-xs text-slate-500 mt-0.5'; catP.textContent = a.cat; info.appendChild(catP);
+    var h3 = document.createElement('h3');
+    h3.className = 'font-semibold';
+    h3.style.color = 'var(--dc-text)';
+    h3.textContent = a.titulo;
+    info.appendChild(h3);
+    var catP = document.createElement('p');
+    catP.className = 'text-xs mt-0.5';
+    catP.style.color = 'var(--dc-faint)';
+    catP.textContent = a.cat;
+    info.appendChild(catP);
     hdr.appendChild(info);
+
     var srcBadge = document.createElement('span');
-    srcBadge.className = 'badge ' + (a.source === 'manual' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700');
-    srcBadge.textContent = a.source === 'manual' ? '📘 Base' : '🤖 Aprendido';
+    srcBadge.className = 'badge';
+    if (a.source === 'manual') {
+      srcBadge.style.background = 'rgba(99,102,241,0.15)';
+      srcBadge.style.color = '#818CF8';
+      srcBadge.textContent = '📘 Base';
+    } else {
+      srcBadge.style.background = 'rgba(139,92,246,0.15)';
+      srcBadge.style.color = '#A78BFA';
+      srcBadge.textContent = '🤖 Aprendido';
+    }
     hdr.appendChild(srcBadge);
     card.appendChild(hdr);
-    // Body
-    var pre = document.createElement('pre'); pre.className = 'text-sm text-slate-600 whitespace-pre-wrap font-sans leading-relaxed mb-3'; pre.textContent = a.body;
+
+    var pre = document.createElement('pre');
+    pre.className = 'text-sm whitespace-pre-wrap font-sans leading-relaxed mb-3';
+    pre.style.color = 'var(--dc-muted)';
+    pre.textContent = a.body;
     card.appendChild(pre);
-    // Tags
+
     var tagsDiv = document.createElement('div'); tagsDiv.className = 'flex flex-wrap gap-1';
     a.tags.forEach(function(t) {
-      var tag = document.createElement('span'); tag.className = 'inline-block bg-slate-100 text-slate-500 rounded px-2 py-0.5 text-[10px]'; tag.textContent = t;
+      var tag = document.createElement('span');
+      tag.className = 'inline-block rounded px-2 py-0.5 text-[10px]';
+      tag.style.background = 'rgba(255,255,255,0.05)';
+      tag.style.color = 'var(--dc-faint)';
+      tag.textContent = t;
       tagsDiv.appendChild(tag);
     });
     card.appendChild(tagsDiv);
@@ -598,15 +816,19 @@ function saveApiKey() {
   var badge = document.getElementById('ai-badge');
   var status = document.getElementById('api-status');
   if (key) {
-    badge.className = 'mx-4 mb-4 rounded-lg px-3 py-2 text-xs border border-emerald-800 bg-[#1a2f1a] text-emerald-400';
+    badge.style.border = '1px solid rgba(16,185,129,0.35)';
+    badge.style.background = 'rgba(16,185,129,0.08)';
+    badge.style.color = '#34D399';
     badge.textContent = '🤖 GPT-4o-mini activo';
     status.textContent = '✅ Modo IA activo';
-    status.className = 'text-xs text-emerald-600';
+    status.style.color = '#34D399';
   } else {
-    badge.className = 'mx-4 mb-4 rounded-lg px-3 py-2 text-xs border border-[#30363d] bg-[#1c2333] text-slate-500';
+    badge.style.border = '1px solid var(--dc-border)';
+    badge.style.background = 'rgba(255,255,255,0.03)';
+    badge.style.color = 'var(--dc-faint)';
     badge.textContent = '🔑 Modo local (keywords)';
     status.textContent = 'Modo local — funcional para demo.';
-    status.className = 'text-xs text-slate-500';
+    status.style.color = 'var(--dc-faint)';
   }
 }
 
@@ -622,9 +844,9 @@ function updateSidebar() {
 
   var el = document.getElementById('sidebar-stats');
   el.textContent = '';
-  [['Total tickets', total, '#e6edf3'],['Auto-resueltos', auto+' ('+pct+'%)', '#3fb950'],['Críticos', crit, '#f85149'],['Desde chat', chat, '#d2a8ff']].forEach(function(row) {
+  [['Total tickets', total, '#F8F7FF'],['Auto-resueltos', auto+' ('+pct+'%)', '#34D399'],['Críticos', crit, '#F87171'],['Desde chat', chat, '#A78BFA']].forEach(function(row) {
     var d = document.createElement('div'); d.className = 'flex justify-between';
-    var lbl = document.createElement('span'); lbl.className = 'text-slate-500'; lbl.textContent = row[0]; d.appendChild(lbl);
+    var lbl = document.createElement('span'); lbl.style.color = 'var(--dc-faint)'; lbl.textContent = row[0]; d.appendChild(lbl);
     var val = document.createElement('span'); val.className = 'font-bold'; val.style.color = row[2]; val.textContent = row[1]; d.appendChild(val);
     el.appendChild(d);
   });
