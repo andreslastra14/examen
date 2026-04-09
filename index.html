@@ -1,955 +1,1041 @@
 <!DOCTYPE html>
-<html class="dark" lang="es">
+<html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>NovaTech · Soporte Inteligente</title>
-<script src="https://cdn.tailwindcss.com?plugins=container-queries"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<script>
-tailwind.config = {
-  darkMode: "class",
-  theme: {
-    extend: {
-      colors: {
-        "on-primary":"#3c0089","on-background":"#dee5ff","secondary-fixed-dim":"#a9c4ff",
-        "inverse-on-surface":"#4d556b","surface-tint":"#bd9dff","on-primary-container":"#2e006c",
-        "on-tertiary-container":"#4a002f","primary":"#bd9dff","surface-container-highest":"#192540",
-        "surface-container-low":"#091328","outline-variant":"#40485d","surface-container-lowest":"#000000",
-        "primary-fixed-dim":"#a67aff","inverse-primary":"#742fe5","surface-variant":"#192540",
-        "primary-dim":"#8a4cfc","on-surface-variant":"#a3aac4","on-surface":"#dee5ff",
-        "secondary-container":"#005ac2","on-tertiary-fixed":"#360021","tertiary-fixed-dim":"#f976ba",
-        "surface-container-high":"#141f38","tertiary":"#ff86c3","secondary-fixed":"#bfd1ff",
-        "surface":"#060e20","surface-dim":"#060e20","on-primary-fixed":"#000000",
-        "on-primary-fixed-variant":"#390083","background":"#060e20","tertiary-container":"#f673b7",
-        "outline":"#6d758c","on-secondary-fixed":"#003271","tertiary-fixed":"#ff8bc5",
-        "on-secondary-fixed-variant":"#004da8","on-error-container":"#ffb2b9",
-        "on-secondary-container":"#f7f7ff","secondary":"#699cff","tertiary-dim":"#f271b5",
-        "primary-container":"#b28cff","error":"#ff6e84","surface-container":"#0f1930",
-        "secondary-dim":"#699cff","error-dim":"#d73357","on-tertiary":"#5f003e",
-        "on-secondary":"#001e4a","surface-bright":"#1f2b49","primary-fixed":"#b28cff",
-        "error-container":"#a70138","on-tertiary-fixed-variant":"#73004b","on-error":"#490013",
-        "inverse-surface":"#faf8ff"
-      },
-      fontFamily: {
-        headline: ["Plus Jakarta Sans"],
-        body: ["Inter"],
-        label: ["Inter"]
-      }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evaluación — Analista de Automatización</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #07090f;
+      --surface:  #0f1320;
+      --card:     #141929;
+      --border:   #1e2640;
+      --accent:   #7c5cfc;
+      --accent2:  #a78bfa;
+      --gold:     #f4c84a;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --success:  #22c55e;
+      --danger:   #ef4444;
+      --radius:   12px;
     }
-  }
-}
-</script>
-<style>
-  * { font-family: 'Inter', system-ui, sans-serif; }
-  .glass-outline { border: 1px solid rgba(189,157,255,0.15); }
-  .mesh-background {
-    background-image:
-      radial-gradient(at 0% 0%, rgba(189,157,255,0.05) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(105,156,255,0.05) 0px, transparent 50%),
-      linear-gradient(rgba(25,37,64,0.3) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(25,37,64,0.3) 1px, transparent 1px);
-    background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
-  }
-  .material-symbols-outlined {
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  }
-  .mi-filled { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-  .fade { animation: fadeUp .25s ease-out; }
-  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-  * { scrollbar-color: rgba(189,157,255,0.15) transparent; scrollbar-width: thin; }
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(189,157,255,0.15); border-radius: 999px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(189,157,255,0.3); }
 
-  /* Override browser defaults for form elements */
-  input, select, textarea {
-    background-color: rgba(0,0,0,0.3) !important;
-    border: 1px solid rgba(64,72,93,0.3) !important;
-    color: #dee5ff !important;
-  }
-  select option { background: #0f1930; color: #dee5ff; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
 
-  .chat-bubble-user { border-radius: 18px 18px 4px 18px; }
-  .chat-bubble-ai   { border-radius: 18px 18px 18px 4px; }
+    .screen { display: none; width: 100%; max-width: 720px; animation: fadeIn .35s ease; }
+    .screen.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-  .card-glass {
-    background: rgba(15,25,48,0.5);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-radius: 1rem;
-  }
-  .badge { display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:9999px;font-size:11px;font-weight:600;white-space:nowrap; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2.5rem;
+    }
 
-  .tk-card { transition: box-shadow .2s, transform .15s; }
-  .tk-card:hover { box-shadow: 0 10px 30px -10px rgba(189,157,255,0.15); transform: translateY(-1px); }
+    /* ── Login ── */
+    #screen-login { max-width: 480px; text-align: center; }
+    .logo-badge {
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, var(--accent), #4f46e5);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.5rem; font-size: 1.75rem;
+    }
+    .login-title { font-size: 1.5rem; font-weight: 700; margin-bottom: .4rem; }
+    .login-sub { color: var(--muted); font-size: .9rem; margin-bottom: 2rem; line-height: 1.6; }
 
-  .dc-input {
-    background: rgba(0,0,0,0.3);
-    border: 1px solid rgba(64,72,93,0.3);
-    border-radius: 12px;
-    color: #dee5ff;
-    outline: none;
-    transition: border-color .15s, box-shadow .15s;
-  }
-  .dc-input::placeholder { color: rgba(163,170,196,0.5); }
-  .dc-input:focus { border-color: rgba(189,157,255,0.4); box-shadow: 0 0 0 2px rgba(189,157,255,0.15); }
-  .dc-select {
-    background: rgba(0,0,0,0.3);
-    border: 1px solid rgba(64,72,93,0.3);
-    border-radius: 12px;
-    color: #dee5ff;
-    outline: none;
-  }
+    input[type="text"] {
+      width: 100%;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1rem; font-family: inherit;
+      padding: .75rem 1rem;
+      text-align: center;
+      letter-spacing: .08em; font-weight: 600;
+      outline: none; transition: border-color .2s;
+    }
+    input[type="text"]:focus { border-color: var(--accent); }
 
-  .nav-btn { transition: all .15s; border-radius: 0.5rem; }
-  .nav-btn:hover { background: rgba(255,255,255,0.05); color: #c4b5fd; }
-  .nav-btn.active { background: rgba(139,108,252,0.2); color: #c4b5fd; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+      padding: .75rem 2rem;
+      border: none; border-radius: 8px;
+      font-family: inherit; font-size: .95rem; font-weight: 600;
+      cursor: pointer; transition: opacity .2s, transform .1s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: var(--accent); color: #fff; width: 100%; margin-top: 1rem; }
+    .btn-primary:hover { opacity: .88; }
+    .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--accent); }
+    .btn-gold { background: var(--gold); color: #1a1000; font-weight: 700; }
 
-  .btn-primary {
-    background: linear-gradient(135deg, #bd9dff 0%, #8a4cfc 100%);
-    color: #3c0089;
-    font-weight: 700;
-    border-radius: 0.5rem;
-    transition: transform .15s, box-shadow .15s;
-    box-shadow: 0 4px 20px rgba(138,76,252,0.25);
-  }
-  .btn-primary:hover { transform: scale(0.97); }
+    .error-msg { color: var(--danger); font-size: .85rem; margin-top: .6rem; display: none; }
 
-  .btn-glass {
-    background: rgba(31,43,73,0.5);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(64,72,93,0.3);
-    border-radius: 0.5rem;
-    color: #a3aac4;
-    font-weight: 500;
-    transition: all .15s;
-  }
-  .btn-glass:hover { background: rgba(31,43,73,0.8); color: #dee5ff; }
-</style>
+    /* ── Exam header ── */
+    .exam-header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.25rem; flex-wrap: wrap; gap: .75rem;
+    }
+    .candidate-name { font-weight: 700; font-size: 1rem; }
+    .candidate-sub  { font-size: .78rem; color: var(--muted); }
+    .timer {
+      font-size: 1.1rem; font-weight: 700; font-variant-numeric: tabular-nums;
+      display: flex; align-items: center; gap: .5rem;
+      background: var(--card); border: 1px solid var(--border);
+      padding: .4rem .9rem; border-radius: 8px;
+    }
+    .timer.warn   { color: #fb923c; border-color: #fb923c44; }
+    .timer.danger { color: var(--danger); border-color: #ef444444; }
+
+    /* ── Progress ── */
+    .progress-bar {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1rem 1.5rem; margin-bottom: 1.25rem;
+    }
+    .progress-steps { display: flex; gap: .5rem; align-items: center; }
+    .progress-step { flex: 1; height: 6px; border-radius: 3px; background: var(--border); transition: background .3s; }
+    .progress-step.done    { background: var(--accent); }
+    .progress-step.current { background: var(--accent2); }
+    .progress-labels { display: flex; justify-content: space-between; margin-top: .5rem; }
+    .progress-label { font-size: .72rem; color: var(--muted); }
+    .progress-label.active { color: var(--accent2); font-weight: 600; }
+
+    /* ── Section card ── */
+    .section-tag {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: #1e1b4b; color: var(--accent2);
+      font-size: .75rem; font-weight: 600;
+      padding: .3rem .75rem; border-radius: 20px;
+      margin-bottom: .75rem; letter-spacing: .04em;
+    }
+    .section-title { font-size: 1.2rem; font-weight: 700; margin-bottom: .3rem; }
+    .section-desc  { color: var(--muted); font-size: .85rem; margin-bottom: 1.75rem; line-height: 1.6; }
+
+    /* ── Question ── */
+    .question { margin-bottom: 1.75rem; padding-bottom: 1.75rem; border-bottom: 1px solid var(--border); }
+    .question:last-of-type { border-bottom: none; margin-bottom: 0; }
+    .q-label { font-size: .7rem; font-weight: 700; color: var(--accent2); letter-spacing: .1em; text-transform: uppercase; margin-bottom: .5rem; }
+    .q-text  { font-size: .95rem; line-height: 1.65; color: var(--text); margin-bottom: 1rem; }
+
+    /* ── Radio options ── */
+    .options { display: flex; flex-direction: column; gap: .6rem; }
+    .option {
+      display: flex; align-items: flex-start; gap: .85rem;
+      padding: .85rem 1rem;
+      border: 1.5px solid var(--border); border-radius: 9px;
+      cursor: pointer; transition: border-color .15s, background .15s; user-select: none;
+    }
+    .option:hover { border-color: var(--accent2); background: #1a1f36; }
+    .option.selected { border-color: var(--accent); background: #1e1b4b; }
+    .option-key {
+      min-width: 26px; height: 26px; border-radius: 50%;
+      background: var(--surface); border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 700; flex-shrink: 0;
+      transition: background .15s, border-color .15s;
+    }
+    .option.selected .option-key { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .option-text { font-size: .88rem; line-height: 1.55; padding-top: 2px; }
+
+    /* ── Ranking ── */
+    .ranking-container { display: flex; flex-direction: column; gap: .5rem; }
+    .rank-item {
+      display: flex; align-items: center; gap: .85rem;
+      padding: .7rem 1rem;
+      border: 1.5px solid var(--border); border-radius: 9px;
+      cursor: pointer; transition: border-color .15s, background .15s; user-select: none;
+    }
+    .rank-item:hover { border-color: var(--accent2); background: #1a1f36; }
+    .rank-item.ranked { border-color: var(--accent); background: #1e1b4b; }
+    .rank-badge {
+      min-width: 28px; height: 28px; border-radius: 50%;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .rank-badge.empty { background: var(--surface); border: 1.5px dashed var(--muted); }
+    .rank-text { font-size: .88rem; line-height: 1.5; }
+    .rank-hint { font-size: .78rem; color: var(--muted); margin-bottom: .75rem; font-style: italic; }
+
+    /* ── Textarea ── */
+    textarea {
+      width: 100%; min-height: 120px;
+      background: var(--surface); border: 1.5px solid var(--border); border-radius: 8px;
+      color: var(--text); font-family: inherit; font-size: .88rem; line-height: 1.6;
+      padding: .85rem 1rem; resize: vertical; outline: none; transition: border-color .2s;
+    }
+    textarea:focus { border-color: var(--accent); }
+    .char-count { text-align: right; font-size: .75rem; color: var(--muted); margin-top: .3rem; }
+    .char-count.ok { color: var(--success); }
+
+    /* ── Nav ── */
+    .nav-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 1.75rem; gap: .75rem;
+    }
+
+    /* ── Review ── */
+    .review-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: .65rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      font-size: .85rem; margin-bottom: .5rem;
+    }
+    .review-section { color: var(--accent2); font-weight: 600; }
+    .review-ok  { color: var(--success); }
+    .review-bad { color: var(--danger); }
+
+    /* ── Result ── */
+    .cipher-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      padding: 1rem; font-family: monospace; font-size: .72rem;
+      word-break: break-all; color: var(--accent2); max-height: 200px; overflow-y: auto;
+      margin: 1rem 0; line-height: 1.7;
+    }
+    .copy-confirm { color: var(--success); font-size: .85rem; display: none; text-align: center; margin-top: .5rem; }
+
+    hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+    @media (max-width: 540px) {
+      .card { padding: 1.5rem; }
+      .exam-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
 </head>
-<body class="bg-background font-body text-on-background selection:bg-primary/30 h-full mesh-background overflow-hidden flex">
+<body>
 
-<!-- SIDEBAR -->
-<aside class="fixed left-0 top-0 h-full flex flex-col p-5 z-40 bg-slate-900/60 backdrop-blur-2xl w-60 border-r border-slate-700/20 shadow-2xl shadow-indigo-500/10">
-  <div class="mb-8 flex items-center gap-3">
-    <div class="w-9 h-9 rounded-lg bg-primary-container flex items-center justify-center">
-      <span class="material-symbols-outlined text-on-primary-container text-xl">rocket_launch</span>
+<!-- SCREEN 1 — Login -->
+<div id="screen-login" class="screen active">
+  <div class="card">
+    <div class="logo-badge">🔒</div>
+    <div class="login-title">Evaluación de Candidato</div>
+    <div class="login-sub">
+      Analista de Automatización<br>
+      Ingresa tu apellido para desbloquear tu evaluación personalizada.
     </div>
+    <input type="text" id="apellido-input" placeholder="TU APELLIDO" autocomplete="off" autocorrect="off" spellcheck="false" />
+    <div id="login-error" class="error-msg">Apellido no reconocido. Verifica que lo escribiste correctamente.</div>
+    <button class="btn btn-primary" onclick="doLogin()">Continuar →</button>
+  </div>
+</div>
+
+<!-- SCREEN 2 — Exam -->
+<div id="screen-exam" class="screen">
+
+  <div class="exam-header">
     <div>
-      <h1 class="text-lg font-extrabold text-violet-200 tracking-tight font-headline">NovaTech</h1>
-      <p class="text-[9px] uppercase tracking-widest text-slate-400">SOPORTE IA</p>
+      <div class="candidate-name" id="hdr-name">—</div>
+      <div class="candidate-sub">Evaluación · Analista de Automatización</div>
+    </div>
+    <div class="timer" id="timer">⏱ 20:00</div>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-steps">
+      <div class="progress-step current" id="ps-0"></div>
+      <div class="progress-step" id="ps-1"></div>
+      <div class="progress-step" id="ps-2"></div>
+      <div class="progress-step" id="ps-3"></div>
+    </div>
+    <div class="progress-labels">
+      <span class="progress-label active" id="pl-0">A · Perfil</span>
+      <span class="progress-label" id="pl-1">B · Automatización</span>
+      <span class="progress-label" id="pl-2">C · IA Aplicada</span>
+      <span class="progress-label" id="pl-3">D · Prompts</span>
     </div>
   </div>
 
-  <nav class="flex-1 space-y-1" id="nav-items">
-    <button onclick="go('chat')"      data-nav="chat"      class="nav-btn active w-full text-left text-sm px-3 py-2.5 flex items-center gap-3 text-slate-400">
-      <span class="material-symbols-outlined text-[20px]">chat</span><span>Chat de Soporte</span></button>
-    <button onclick="go('tickets')"   data-nav="tickets"   class="nav-btn w-full text-left text-sm px-3 py-2.5 flex items-center gap-3 text-slate-400">
-      <span class="material-symbols-outlined text-[20px]">confirmation_number</span><span>Tickets</span></button>
-    <button onclick="go('dashboard')" data-nav="dashboard" class="nav-btn w-full text-left text-sm px-3 py-2.5 flex items-center gap-3 text-slate-400">
-      <span class="material-symbols-outlined text-[20px]">dashboard</span><span>Dashboard</span></button>
-    <button onclick="go('kb')"        data-nav="kb"        class="nav-btn w-full text-left text-sm px-3 py-2.5 flex items-center gap-3 text-slate-400">
-      <span class="material-symbols-outlined text-[20px]">menu_book</span><span>Base de Conocimiento</span></button>
-    <button onclick="go('config')"    data-nav="config"    class="nav-btn w-full text-left text-sm px-3 py-2.5 flex items-center gap-3 text-slate-400">
-      <span class="material-symbols-outlined text-[20px]">settings</span><span>Configuracion</span></button>
-  </nav>
+  <!-- SECCIÓN A -->
+  <div id="section-A" class="card" style="display:none;">
+    <div class="section-tag">🧠 Sección A</div>
+    <div class="section-title">Perfil Psicológico</div>
+    <div class="section-desc">Selecciona la respuesta que mejor describe cómo actuarías en cada situación. No hay respuestas correctas o incorrectas.</div>
 
-  <div class="mt-auto">
-    <div class="border-t border-slate-700/20 pt-4 mb-3">
-      <div class="text-[9px] tracking-widest uppercase text-slate-500 mb-2 px-1">Estado del sistema</div>
-      <div id="sidebar-stats" class="space-y-1.5 text-[12px] px-1"></div>
+    <div class="question">
+      <div class="q-label">A1 — Tolerancia a la ambigüedad</div>
+      <div class="q-text">Tu líder te asigna un proceso para automatizar, pero la documentación es confusa y nadie en el equipo lo ha hecho antes. ¿Qué haces primero?</div>
+      <div class="options" id="opts-A1">
+        <div class="option" data-q="A1" data-v="a"><div class="option-key">a</div><div class="option-text">Espero a que alguien me explique bien el proceso antes de actuar.</div></div>
+        <div class="option" data-q="A1" data-v="b"><div class="option-key">b</div><div class="option-text">Intento entenderlo solo investigando y probando, y si me atasco pregunto.</div></div>
+        <div class="option" data-q="A1" data-v="c"><div class="option-key">c</div><div class="option-text">Le digo a mi líder que sin documentación clara no puedo avanzar.</div></div>
+        <div class="option" data-q="A1" data-v="d"><div class="option-key">d</div><div class="option-text">Busco un proceso similar ya automatizado para usarlo como referencia.</div></div>
+      </div>
     </div>
-    <div class="border-t border-slate-700/20 pt-3 grid grid-cols-2 gap-2">
-      <button onclick="loadDemo()" class="btn-glass text-xs px-3 py-1.5 flex items-center justify-center gap-1">
-        <span class="material-symbols-outlined text-[14px]">download</span> Demo</button>
-      <button onclick="resetChat()" class="btn-glass text-xs px-3 py-1.5 flex items-center justify-center gap-1">
-        <span class="material-symbols-outlined text-[14px]">delete</span> Chat</button>
+
+    <div class="question">
+      <div class="q-label">A2 — Resiliencia</div>
+      <div class="q-text">Llevas 3 días trabajando en una automatización y descubres que tu enfoque inicial no va a funcionar. ¿Cómo reaccionas?</div>
+      <div class="options" id="opts-A2">
+        <div class="option" data-q="A2" data-v="a"><div class="option-key">a</div><div class="option-text">Me frustra, pero descarto todo y empiezo de cero con otro enfoque.</div></div>
+        <div class="option" data-q="A2" data-v="b"><div class="option-key">b</div><div class="option-text">Intento adaptar lo que ya tengo para no perder el avance.</div></div>
+        <div class="option" data-q="A2" data-v="c"><div class="option-key">c</div><div class="option-text">Pido ayuda inmediata al equipo antes de seguir invirtiendo tiempo.</div></div>
+        <div class="option" data-q="A2" data-v="d"><div class="option-key">d</div><div class="option-text">Analizo qué partes sirven, documento qué falló, y replanteo la solución.</div></div>
+      </div>
     </div>
-    <div id="ai-badge" class="mt-3 rounded-lg px-3 py-2 text-xs card-glass glass-outline text-slate-400 flex items-center gap-2">
-      <span class="material-symbols-outlined text-[16px]">vpn_key</span> Modo local (keywords)</div>
+
+    <div class="question">
+      <div class="q-label">A3 — Gestión de prioridades</div>
+      <div class="q-text">Un compañero te pide ayuda urgente con su proyecto, pero tú tienes tu propia fecha de entrega mañana. ¿Qué haces?</div>
+      <div class="options" id="opts-A3">
+        <div class="option" data-q="A3" data-v="a"><div class="option-key">a</div><div class="option-text">Le ayudo primero — el equipo es prioridad.</div></div>
+        <div class="option" data-q="A3" data-v="b"><div class="option-key">b</div><div class="option-text">Le explico mi situación y le ofrezco ayuda después de mi entrega.</div></div>
+        <div class="option" data-q="A3" data-v="c"><div class="option-key">c</div><div class="option-text">Le dedico 15 minutos para desbloquearlo y luego vuelvo a lo mío.</div></div>
+        <div class="option" data-q="A3" data-v="d"><div class="option-key">d</div><div class="option-text">Lo canalizo con alguien más que pueda ayudarlo ahora.</div></div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <span style="font-size:.82rem;color:var(--muted);">Sección 1 de 4</span>
+      <button class="btn btn-primary" onclick="nextSection('A','B')">Siguiente →</button>
+    </div>
   </div>
-</aside>
 
-<!-- MAIN -->
-<main class="ml-60 flex-1 overflow-y-auto h-screen">
+  <!-- SECCIÓN B -->
+  <div id="section-B" class="card" style="display:none;">
+    <div class="section-tag">⚙️ Sección B</div>
+    <div class="section-title">Criterio de Automatización</div>
+    <div class="section-desc">Evalúa tu capacidad de identificar qué, cuándo y cómo automatizar procesos de negocio.</div>
 
-<!-- CHAT PAGE -->
-<section id="p-chat" class="h-full flex flex-col">
-  <div class="px-8 pt-7 pb-2 flex items-center gap-3">
-    <span class="material-symbols-outlined text-primary text-[28px]">smart_toy</span>
+    <div class="question">
+      <div class="q-label">B1 — Priorización</div>
+      <div class="q-text">¿Cuál de estos procesos tiene MÁS sentido automatizar primero?</div>
+      <div class="options" id="opts-B1">
+        <div class="option" data-q="B1" data-v="a"><div class="option-key">a</div><div class="option-text">Un reporte mensual que tarda 30 min y lo hace 1 persona.</div></div>
+        <div class="option" data-q="B1" data-v="b"><div class="option-key">b</div><div class="option-text">El envío diario de 200 facturas que se copian manualmente entre 2 sistemas.</div></div>
+        <div class="option" data-q="B1" data-v="c"><div class="option-key">c</div><div class="option-text">La aprobación de vacaciones que pasa por 3 personas vía email.</div></div>
+        <div class="option" data-q="B1" data-v="d"><div class="option-key">d</div><div class="option-text">La creación de contratos que requiere revisión legal caso por caso.</div></div>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="q-label">B2 — Análisis antes de acción</div>
+      <div class="q-text">Un cliente te dice: "Quiero automatizar TODO mi proceso de ventas." ¿Cuál es tu primera respuesta?</div>
+      <div class="options" id="opts-B2">
+        <div class="option" data-q="B2" data-v="a"><div class="option-key">a</div><div class="option-text">Perfecto, empecemos a mapear todas las etapas.</div></div>
+        <div class="option" data-q="B2" data-v="b"><div class="option-key">b</div><div class="option-text">Primero necesito entender qué partes son repetitivas y cuáles requieren juicio humano.</div></div>
+        <div class="option" data-q="B2" data-v="c"><div class="option-key">c</div><div class="option-text">Le presento opciones de herramientas de automatización disponibles.</div></div>
+        <div class="option" data-q="B2" data-v="d"><div class="option-key">d</div><div class="option-text">Le digo que no todo se puede automatizar.</div></div>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="q-label">B3 — Ranking de criterios</div>
+      <div class="q-text">¿Qué criterios usarías para PRIORIZAR qué proceso automatizar? Haz clic en cada criterio en el orden de más a menos importante.</div>
+      <div class="rank-hint">Haz clic en orden: primero el más importante, último el menos importante. Haz clic de nuevo para desmarcar.</div>
+      <div class="ranking-container" id="rank-B3">
+        <div class="rank-item" id="ritem-freq">
+          <div class="rank-badge empty" id="rbadge-freq"></div>
+          <div class="rank-text">Frecuencia de ejecución</div>
+        </div>
+        <div class="rank-item" id="ritem-errors">
+          <div class="rank-badge empty" id="rbadge-errors"></div>
+          <div class="rank-text">Cantidad de errores humanos actuales</div>
+        </div>
+        <div class="rank-item" id="ritem-time">
+          <div class="rank-badge empty" id="rbadge-time"></div>
+          <div class="rank-text">Tiempo que consume manualmente</div>
+        </div>
+        <div class="rank-item" id="ritem-impact">
+          <div class="rank-badge empty" id="rbadge-impact"></div>
+          <div class="rank-text">Impacto en el negocio si falla</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="q-label">B4 — Diagnóstico</div>
+      <div class="q-text">Una automatización que creaste hace 2 meses dejó de funcionar. ¿Cuál es tu primer paso?</div>
+      <div class="options" id="opts-B4">
+        <div class="option" data-q="B4" data-v="a"><div class="option-key">a</div><div class="option-text">Revisar los logs de error para identificar qué cambió.</div></div>
+        <div class="option" data-q="B4" data-v="b"><div class="option-key">b</div><div class="option-text">Reconstruirla desde cero porque probablemente está obsoleta.</div></div>
+        <div class="option" data-q="B4" data-v="c"><div class="option-key">c</div><div class="option-text">Preguntar al equipo si alguien tocó algo.</div></div>
+        <div class="option" data-q="B4" data-v="d"><div class="option-key">d</div><div class="option-text">Verificar si hubo cambios en los sistemas conectados (APIs, permisos, formatos).</div></div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="showSection('A')">← Anterior</button>
+      <button class="btn btn-primary" onclick="nextSection('B','C')">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- SECCIÓN C -->
+  <div id="section-C" class="card" style="display:none;">
+    <div class="section-tag">🤖 Sección C</div>
+    <div class="section-title">IA Aplicada</div>
+    <div class="section-desc">Responde con tus propias palabras. Se evalúa la claridad de tu razonamiento. Mínimo 40 caracteres por respuesta.</div>
+
+    <div class="question">
+      <div class="q-label">C1 — Casos de uso de IA generativa</div>
+      <div class="q-text">Describe un escenario donde usarías IA generativa (como ChatGPT o Claude) para resolver un problema de negocio. ¿Qué problema resuelve y por qué IA es mejor que una regla fija?</div>
+      <textarea id="ans-C1" placeholder="Escribe tu respuesta aquí..." oninput="syncText('C1',40)"></textarea>
+      <div class="char-count" id="cc-C1">0 / 40 caracteres mínimo</div>
+    </div>
+
+    <div class="question">
+      <div class="q-label">C2 — Riesgos y limitaciones</div>
+      <div class="q-text">Tu jefe quiere usar IA para aprobar o rechazar solicitudes de crédito automáticamente. ¿Qué riesgos o limitaciones le mencionarías antes de implementarlo?</div>
+      <textarea id="ans-C2" placeholder="Escribe tu respuesta aquí..." oninput="syncText('C2',40)"></textarea>
+      <div class="char-count" id="cc-C2">0 / 40 caracteres mínimo</div>
+    </div>
+
+    <div class="question">
+      <div class="q-label">C3 — Automatización vs IA</div>
+      <div class="q-text">¿Cuál es la diferencia entre automatización basada en reglas (si X entonces Y) e IA? Da un ejemplo de cuándo usarías cada una.</div>
+      <textarea id="ans-C3" placeholder="Escribe tu respuesta aquí..." oninput="syncText('C3',40)"></textarea>
+      <div class="char-count" id="cc-C3">0 / 40 caracteres mínimo</div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="showSection('B')">← Anterior</button>
+      <button class="btn btn-primary" onclick="nextSection('C','D')">Siguiente →</button>
+    </div>
+  </div>
+
+  <!-- SECCIÓN D -->
+  <div id="section-D" class="card" style="display:none;">
+    <div class="section-tag">✍️ Sección D</div>
+    <div class="section-title">Prompt Engineering</div>
+    <div class="section-desc">Escribe prompts reales y funcionales para los siguientes casos. Sé específico, claro y considera casos borde. Mínimo 60 caracteres por ejercicio.</div>
+
+    <div class="question">
+      <div class="q-label">D1 — Clasificación de correos</div>
+      <div class="q-text">Escribe un prompt para que una IA clasifique correos de clientes en estas categorías: <strong>Queja, Consulta, Solicitud de cambio, Felicitación</strong>. El prompt debe funcionar para cualquier correo.</div>
+      <textarea id="ans-D1" placeholder="Escribe el prompt aquí..." style="min-height:150px;" oninput="syncText('D1',60)"></textarea>
+      <div class="char-count" id="cc-D1">0 / 60 caracteres mínimo</div>
+    </div>
+
+    <div class="question">
+      <div class="q-label">D2 — Extracción de datos de facturas</div>
+      <div class="q-text">Un proceso manual consiste en: leer un PDF de factura, extraer el monto y proveedor, y registrarlo en una tabla. Escribe el prompt que le darías a una IA para hacer esto automáticamente.</div>
+      <textarea id="ans-D2" placeholder="Escribe el prompt aquí..." style="min-height:150px;" oninput="syncText('D2',60)"></textarea>
+      <div class="char-count" id="cc-D2">0 / 60 caracteres mínimo</div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="showSection('C')">← Anterior</button>
+      <button class="btn btn-primary" onclick="goReview()">Revisar respuestas →</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 3 — Review -->
+<div id="screen-review" class="screen">
+  <div class="card">
+    <div class="section-tag">📋 Revisión Final</div>
+    <div class="section-title">Revisa antes de enviar</div>
+    <div class="section-desc">Verifica que todas las secciones estén completas. Puedes regresar a corregir antes de enviar.</div>
+
+    <div id="review-grid"><!-- built by buildReview() --></div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+
+    <div id="review-warning" style="color:var(--danger);font-size:.85rem;margin-bottom:1rem;display:none;">
+      ⚠️ Aún tienes secciones incompletas. Regresa y completa todas las respuestas.
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="backToExam()">← Editar respuestas</button>
+      <button class="btn btn-primary" id="btn-submit" onclick="submitExam()">Enviar examen ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 4 — Result -->
+<div id="screen-result" class="screen">
+  <div class="card">
+    <div style="text-align:center;margin-bottom:1.5rem;">
+      <div style="font-size:3rem;margin-bottom:.5rem;">✅</div>
+      <div style="font-size:1.3rem;font-weight:700;margin-bottom:.3rem;">¡Examen completado!</div>
+      <div style="color:var(--muted);font-size:.9rem;">Tu evaluación ha sido cifrada. Copia el código y envíalo al evaluador.</div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:1rem;margin-bottom:1rem;">
+      <div style="font-size:.75rem;color:var(--muted);margin-bottom:.4rem;font-weight:600;letter-spacing:.05em;">CANDIDATO</div>
+      <div id="res-name" style="font-weight:700;font-size:1rem;"></div>
+      <div id="res-time" style="font-size:.8rem;color:var(--muted);margin-top:.2rem;"></div>
+    </div>
+
+    <div style="font-size:.82rem;color:var(--muted);margin-bottom:.4rem;">Código cifrado de tus respuestas:</div>
+    <div class="cipher-box" id="cipher-output"></div>
+
+    <button class="btn btn-gold" style="width:100%;" onclick="copyCipher()">📋 Copiar código cifrado</button>
+    <div class="copy-confirm" id="copy-confirm">✓ ¡Copiado al portapapeles!</div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;" />
+    <div style="font-size:.8rem;color:var(--muted);line-height:1.6;text-align:center;margin-bottom:1.25rem;">
+      Envía este código por el medio indicado por el evaluador.<br>
+      <strong>No compartas tu código con otros candidatos.</strong>
+    </div>
+
+    <!-- Part 2 CTA -->
+    <div style="background:linear-gradient(135deg,#1e1b4b,#1a2040);border:1px solid var(--accent);border-radius:10px;padding:1.25rem;text-align:center;">
+      <div style="font-size:.75rem;font-weight:700;letter-spacing:.1em;color:var(--accent2);margin-bottom:.5rem;">PARTE 2 DISPONIBLE</div>
+      <div style="font-weight:700;font-size:1rem;margin-bottom:.3rem;">Evaluación Práctica — Caso Real</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-bottom:1rem;line-height:1.5;">Construye un MVP funcional usando IA y automatización. Tienes <strong style="color:var(--text);">2 horas</strong> para completarla.</div>
+      <button class="btn btn-primary" style="width:100%;margin-top:0;" onclick="goPart2Bridge()">Continuar a la Parte 2 →</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN 5 — Part 2 Bridge
+═══════════════════════════════════════════════ -->
+<div id="screen-p2-bridge" class="screen">
+  <div class="card" style="max-width:560px;margin:0 auto;text-align:center;">
+    <div style="font-size:3rem;margin-bottom:1rem;">🚀</div>
+    <div style="font-size:1.4rem;font-weight:700;margin-bottom:.5rem;">¡Parte 1 completada!</div>
+    <div style="color:var(--muted);font-size:.9rem;line-height:1.6;margin-bottom:2rem;">
+      Ahora viene la <strong style="color:var(--text);">Parte 2: Evaluación Práctica</strong>.<br>
+      Simularás un proyecto real con un cliente ficticio, y deberás analizar el problema, documentar los requerimientos y construir un MVP funcional.
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-bottom:1.5rem;text-align:left;">
+      <div style="font-size:.75rem;font-weight:700;color:var(--accent2);letter-spacing:.1em;margin-bottom:.75rem;">LO QUE NECESITAS SABER</div>
+      <div class="p2-info-row">⏱ <span><strong>2 horas</strong> para completar los 3 entregables</span></div>
+      <div class="p2-info-row">🛠️ <span>Puedes usar <strong>cualquier herramienta de IA</strong> que elijas</span></div>
+      <div class="p2-info-row">📄 <span>Recibirás documentos para descargar al iniciar</span></div>
+      <div class="p2-info-row">🤖 <span>Tendrás acceso a un <strong>agente-cliente</strong> para hacer preguntas</span></div>
+      <div class="p2-info-row">📧 <span>Entregas finales por email a <strong>alastra@ternova.group</strong></span></div>
+    </div>
+
+    <div style="background:#1c1200;border:1px solid #f4c84a44;border-radius:10px;padding:1rem;margin-bottom:1.5rem;font-size:.83rem;color:#f4c84a;line-height:1.6;">
+      ⚠️ <strong>El timer de 2 horas comienza cuando hagas clic en "Iniciar Parte 2".</strong><br>
+      Asegúrate de tener tiempo disponible antes de continuar.
+    </div>
+
+    <div style="display:flex;gap:.75rem;flex-direction:column;">
+      <button class="btn btn-primary" style="margin-top:0;" onclick="startPart2()">Iniciar Parte 2 (2 horas) →</button>
+      <button class="btn btn-secondary" onclick="showScreen('screen-result')">← Volver a mis resultados</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN 6 — Part 2 (Main)
+═══════════════════════════════════════════════ -->
+<div id="screen-part2" class="screen">
+
+  <!-- P2 Header -->
+  <div class="exam-header" style="margin-bottom:1.25rem;">
     <div>
-      <h1 class="text-xl font-bold tracking-tight font-headline text-on-surface">Chat de Soporte</h1>
-      <p class="text-xs text-slate-400">Cuéntame tu problema. Si puedo resolverlo lo hago aquí; si no, creo el ticket automáticamente.</p>
+      <div class="candidate-name" id="p2-hdr-name">—</div>
+      <div class="candidate-sub">Parte 2 · Evaluación Práctica</div>
     </div>
+    <div class="timer" id="p2-timer">⏱ 2:00:00</div>
   </div>
-  <div id="ticket-banner" class="hidden mx-8 mt-2 rounded-xl px-4 py-3 text-sm font-medium fade glass-outline"
-       style="background:rgba(138,76,252,0.12);color:#bd9dff;"></div>
-  <div id="chat-area" class="hidden flex-1 overflow-y-auto px-8 py-4 space-y-4"></div>
-  <div id="chat-welcome" class="flex-1 flex items-center justify-center text-center px-8">
-    <div>
-      <div class="w-16 h-16 rounded-2xl bg-primary-container/20 glass-outline flex items-center justify-center mx-auto mb-4">
-        <span class="material-symbols-outlined text-primary text-4xl">smart_toy</span>
+
+  <!-- Instructions card -->
+  <div class="card" style="margin-bottom:1.25rem;">
+    <div class="section-tag">📋 Instrucciones</div>
+    <div class="section-title">Evaluación Práctica — Analista de Automatización</div>
+    <div class="section-desc" style="margin-bottom:1.5rem;">Esta evaluación simula un proyecto real. Recibirás un caso de un cliente ficticio y deberás analizar el problema, documentar los requerimientos y <strong style="color:var(--text);">construir un MVP funcional</strong> usando las herramientas de IA y automatización que tú elijas.<br><br>
+    <strong style="color:var(--text);">No hay herramientas correctas o incorrectas.</strong> Lo que evaluamos es tu capacidad de tomar decisiones, pensar como producto y ejecutar con herramientas de AI.</div>
+
+    <!-- Timeline suggestion -->
+    <div style="font-size:.78rem;font-weight:700;color:var(--accent2);letter-spacing:.08em;margin-bottom:.75rem;">DISTRIBUCIÓN SUGERIDA DEL TIEMPO</div>
+    <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem;">
+      <div class="p2-phase-row"><span class="p2-phase-label">Fase 1 — Análisis</span><span class="p2-phase-time">~30 min</span><span class="p2-phase-del">Preguntas al cliente + notas</span></div>
+      <div class="p2-phase-row"><span class="p2-phase-label">Fase 2 — PRD</span><span class="p2-phase-time">~20 min</span><span class="p2-phase-del">PRD completado</span></div>
+      <div class="p2-phase-row"><span class="p2-phase-label">Fase 3 — Construcción</span><span class="p2-phase-time">~70 min</span><span class="p2-phase-del">MVP funcional</span></div>
+    </div>
+
+    <!-- The Case -->
+    <div style="font-size:.78rem;font-weight:700;color:var(--accent2);letter-spacing:.08em;margin-bottom:.75rem;">EL CASO</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:1rem;margin-bottom:1.5rem;font-size:.88rem;line-height:1.65;">
+      <strong>Cliente:</strong> NovaTech Solutions — una consultora de TI con 200 empleados.<br>
+      <strong>Problema:</strong> Su equipo de TI (4 personas) está sobrecargado con tickets de soporte que llegan por email. Quieren un sistema que use IA para clasificar, priorizar y resolver automáticamente los tickets que pueda.
+    </div>
+
+    <!-- Client Agent link -->
+    <div style="background:linear-gradient(135deg,#0f2040,#0a1a30);border:1px solid #3b82f644;border-radius:9px;padding:1rem;margin-bottom:1.5rem;">
+      <div style="font-size:.78rem;font-weight:700;color:#60a5fa;letter-spacing:.08em;margin-bottom:.5rem;">🤖 AGENTE-CLIENTE: rIcArdo Méndez</div>
+      <div style="font-size:.83rem;color:var(--muted);line-height:1.55;margin-bottom:.75rem;">Gerente de Operaciones de NovaTech. Es un agente de IA que actúa como el cliente. Hazle las preguntas que necesites para obtener información que no está en la transcripción.</div>
+      <a href="https://gemini.google.com/gem/1eNsQ5mflvS1W7oL0Us4O7Xay6YCZjCN_?usp=sharing"
+         target="_blank" rel="noopener noreferrer"
+         class="btn btn-secondary" style="font-size:.82rem;padding:.5rem 1rem;text-decoration:none;display:inline-flex;">
+        Abrir conversación con rIcArdo →
+      </a>
+    </div>
+
+    <!-- Deliverables -->
+    <div style="font-size:.78rem;font-weight:700;color:var(--accent2);letter-spacing:.08em;margin-bottom:.75rem;">ENTREGABLES OBLIGATORIOS</div>
+    <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem;">
+      <div class="p2-deliverable">
+        <div class="p2-del-num">1</div>
+        <div>
+          <div style="font-weight:600;font-size:.88rem;">Link de conversación con rIcArdo</div>
+          <div style="font-size:.78rem;color:var(--muted);">Las preguntas que hiciste al agente-cliente</div>
+        </div>
       </div>
-      <div class="text-xl font-bold font-headline text-on-surface">Hola, soy Nova</div>
-      <div class="text-sm mt-1 text-slate-400">Asistente inteligente de TI · NovaTech Solutions</div>
-      <div class="flex gap-2 justify-center mt-5 flex-wrap">
-        <span class="badge" style="background:rgba(189,157,255,0.12);color:#bd9dff;">
-          <span class="material-symbols-outlined text-[14px]">vpn_key</span> Contrasenas</span>
-        <span class="badge" style="background:rgba(105,156,255,0.12);color:#699cff;">
-          <span class="material-symbols-outlined text-[14px]">language</span> VPN</span>
-        <span class="badge" style="background:rgba(138,76,252,0.12);color:#a67aff;">
-          <span class="material-symbols-outlined text-[14px]">computer</span> Software</span>
-        <span class="badge" style="background:rgba(255,134,195,0.12);color:#ff86c3;">
-          <span class="material-symbols-outlined text-[14px]">print</span> Impresoras</span>
-        <span class="badge" style="background:rgba(163,170,196,0.1);color:#a3aac4;">
-          <span class="material-symbols-outlined text-[14px]">mouse</span> Hardware</span>
+      <div class="p2-deliverable">
+        <div class="p2-del-num">2</div>
+        <div>
+          <div style="font-weight:600;font-size:.88rem;">PRD Completado</div>
+          <div style="font-size:.78rem;color:var(--muted);">El archivo editado, Google Doc, Word — el formato que prefieras</div>
+        </div>
+      </div>
+      <div class="p2-deliverable">
+        <div class="p2-del-num">3</div>
+        <div>
+          <div style="font-weight:600;font-size:.88rem;">Repositorio de GitHub con MVP Funcional</div>
+          <div style="font-size:.78rem;color:var(--muted);">README.md + código fuente + archivos de configuración. Repo público o privado (agrega a alastra14)</div>
+        </div>
       </div>
     </div>
-  </div>
-  <form onsubmit="sendChat(event)" class="px-8 pb-6 pt-2">
-    <div class="flex gap-3 items-center">
-      <input id="chat-input" type="text" placeholder="Escribe tu problema o pregunta…"
-             class="flex-1 dc-input px-4 py-3 text-sm">
-      <button type="submit" class="btn-primary px-5 py-3 flex items-center gap-2">
-        <span class="material-symbols-outlined mi-filled text-[18px]">send</span> Enviar</button>
+
+    <!-- Rules -->
+    <div style="font-size:.78rem;font-weight:700;color:var(--accent2);letter-spacing:.08em;margin-bottom:.75rem;">REGLAS</div>
+    <div style="display:flex;flex-direction:column;gap:.4rem;font-size:.83rem;line-height:1.55;margin-bottom:1.5rem;">
+      <div class="p2-rule">✅ Puedes usar <strong>cualquier herramienta de IA o automatización</strong> — Google, StackOverflow, Claude, ChatGPT, v0, Bolt, Replit, Make.com, n8n...</div>
+      <div class="p2-rule">✅ No hay trampa. El agente-cliente tiene información real limitada, como un cliente real.</div>
+      <div class="p2-rule">✅ <strong>Documenta tus decisiones</strong> en el PRD — explica por qué elegiste lo que elegiste.</div>
+      <div class="p2-rule">✅ Si te atoras, <strong>pivotea</strong>. Mejor algo simple que funcione que algo ambicioso que no.</div>
+      <div class="p2-rule">⏱️ <strong>El tiempo es firme.</strong> A las 2 horas se detiene todo. Entrega lo que tengas.</div>
     </div>
-  </form>
-</section>
 
-<!-- TICKETS PAGE -->
-<section id="p-tickets" class="hidden px-8 py-6 fade">
-  <div class="flex items-center justify-between mb-1">
-    <div class="flex items-center gap-3">
-      <span class="material-symbols-outlined text-primary text-[28px]">confirmation_number</span>
-      <h1 class="text-xl font-bold tracking-tight font-headline text-on-surface">Gestion de Tickets</h1>
+    <!-- Bonus -->
+    <div style="background:#0a1f0a;border:1px solid #22c55e44;border-radius:9px;padding:.9rem;font-size:.83rem;line-height:1.6;color:#86efac;margin-bottom:1.5rem;">
+      <strong>⭐ Puntos Extra:</strong> Si despliegas tu MVP en Vercel u otro servicio y compartes un link funcional, obtienes puntos extra. Demuestra que puedes llevar algo de idea a producción en tiempo récord.
     </div>
-    <button onclick="toggleForm()" class="btn-primary px-4 py-2 flex items-center gap-1.5 text-sm">
-      <span class="material-symbols-outlined text-[18px]">add</span> Nuevo</button>
-  </div>
-  <p class="text-xs mb-5 text-slate-400 ml-10">Explora, filtra y ordena todos los tickets de soporte.</p>
 
-  <div id="new-ticket-form" class="hidden mb-6 card-glass glass-outline p-5 rounded-2xl fade">
-    <h3 class="font-semibold mb-4 flex items-center gap-2 text-on-surface">
-      <span class="material-symbols-outlined text-primary text-[20px]">add_circle</span> Crear Ticket Manualmente</h3>
-    <div class="grid grid-cols-3 gap-4 mb-4">
-      <div><label class="block text-xs font-medium mb-1 text-slate-400">Email</label>
-           <input id="f-email" placeholder="usuario@novatech.com" class="w-full dc-input px-3 py-2 text-sm"></div>
-      <div><label class="block text-xs font-medium mb-1 text-slate-400">Departamento</label>
-           <select id="f-dept" class="w-full dc-select px-3 py-2 text-sm"><option>Desarrollo</option><option>Infraestructura</option><option>Operaciones</option><option>Ventas</option><option>Administracion</option><option>RRHH</option><option>Direccion</option><option>QA</option><option>Diseno</option></select></div>
-      <div><label class="block text-xs font-medium mb-1 text-slate-400">Oficina</label>
-           <select id="f-office" class="w-full dc-select px-3 py-2 text-sm"><option>Monterrey</option><option>Guadalajara</option></select></div>
-    </div>
-    <div class="grid grid-cols-2 gap-4 mb-4">
-      <div><label class="block text-xs font-medium mb-1 text-slate-400">Asunto</label>
-           <input id="f-subject" placeholder="Describe brevemente…" class="w-full dc-input px-3 py-2 text-sm"></div>
-      <div><label class="block text-xs font-medium mb-1 text-slate-400">Prioridad</label>
-           <select id="f-pri" class="w-full dc-select px-3 py-2 text-sm"><option value="">Auto-detectar</option><option>Crítica</option><option>Alta</option><option>Media</option><option>Baja</option></select></div>
-    </div>
-    <div class="mb-4"><label class="block text-xs font-medium mb-1 text-slate-400">Descripcion</label>
-         <textarea id="f-body" rows="3" placeholder="Detalla el problema…" class="w-full dc-input px-3 py-2 text-sm resize-none"></textarea></div>
-    <button onclick="createManualTicket()" class="btn-primary px-5 py-2 flex items-center gap-2 text-sm">
-      <span class="material-symbols-outlined text-[18px]">check_circle</span> Crear Ticket</button>
-  </div>
-
-  <div class="relative mb-4">
-    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[18px]">search</span>
-    <input id="tk-search" oninput="renderTickets()" placeholder="Buscar por asunto, remitente o descripcion…"
-           class="w-full dc-input pl-10 pr-4 py-2.5 text-sm">
-  </div>
-  <div class="grid grid-cols-4 gap-3 mb-4">
-    <select id="flt-pri" onchange="renderTickets()" class="dc-select px-3 py-2 text-sm"><option value="">Todas las prioridades</option><option>Crítica</option><option>Alta</option><option>Media</option><option>Baja</option></select>
-    <select id="flt-est" onchange="renderTickets()" class="dc-select px-3 py-2 text-sm"><option value="">Todos los estados</option><option>Resuelto (Auto)</option><option>Escalado a Marcos</option><option>En cola</option><option>Esperando aprobación</option><option>Derivado a RRHH</option></select>
-    <select id="flt-cat" onchange="renderTickets()" class="dc-select px-3 py-2 text-sm"><option value="">Todas las categorías</option><option>Reset de Contraseñas</option><option>VPN / Conectividad</option><option>Software</option><option>Permisos de Acceso</option><option>Hardware</option><option>Impresoras</option><option>Servidor/Infraestructura</option></select>
-    <select id="flt-sort" onchange="renderTickets()" class="dc-select px-3 py-2 text-sm"><option value="newest">Más reciente</option><option value="oldest">Más antiguo</option><option value="priHigh">Mayor prioridad</option><option value="priLow">Menor prioridad</option></select>
-  </div>
-  <p id="tk-count" class="text-xs mb-3 text-slate-500"></p>
-  <div id="tk-list"></div>
-  <p id="tk-empty" class="hidden text-center py-16 text-slate-500">No hay tickets. Usa el chat o carga demo.</p>
-</section>
-
-<!-- DASHBOARD PAGE — Bento Grid Layout -->
-<section id="p-dashboard" class="hidden px-8 py-6 fade">
-  <div class="flex items-center gap-3 mb-1">
-    <span class="material-symbols-outlined text-primary text-[28px]">dashboard</span>
-    <h1 class="text-xl font-bold tracking-tight font-headline text-on-surface">Dashboard Analítico</h1>
-  </div>
-  <p class="text-xs mt-1 mb-5 text-slate-400 ml-10">Métricas en tiempo real del sistema de soporte.</p>
-  <div id="dash-empty" class="text-center py-16 text-slate-500">Carga datos demo o crea tickets para ver métricas.</div>
-  <div id="dash-content" class="hidden">
-    <!-- Bento grid: 4 cols, auto rows ~140px -->
-    <div class="grid grid-cols-4 gap-4" style="grid-auto-rows:minmax(130px,auto);" id="bento-grid">
-      <!-- KPI: Total (tall) -->
-      <div id="kpi-total" class="card-glass glass-outline rounded-2xl p-5 flex flex-col justify-between" style="grid-row:span 2;"></div>
-      <!-- Chart: Categoría (large — 2x2) -->
-      <div class="card-glass glass-outline rounded-2xl p-5 flex flex-col" style="grid-column:span 2;grid-row:span 2;">
-        <h3 class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">Tickets por Categoría</h3>
-        <div class="flex-1 flex items-center justify-center"><canvas id="c-cat"></canvas></div>
-      </div>
-      <!-- KPI: Auto-resueltos -->
-      <div id="kpi-auto" class="card-glass glass-outline rounded-2xl p-5 flex flex-col justify-between"></div>
-      <!-- KPI: Escalados -->
-      <div id="kpi-esc" class="card-glass glass-outline rounded-2xl p-5 flex flex-col justify-between"></div>
-
-      <!-- Resolution rate ring -->
-      <div id="kpi-ring" class="card-glass glass-outline rounded-2xl p-5 flex flex-col items-center justify-center text-center" style="grid-row:span 2;">
-        <canvas id="c-ring" width="120" height="120"></canvas>
-        <div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-2">Resolución</div>
-        <div id="ring-pct" class="text-2xl font-bold text-primary mt-0.5">0%</div>
-      </div>
-
-      <!-- Chart: Estado (wide bar) -->
-      <div class="card-glass glass-outline rounded-2xl p-5 flex flex-col" style="grid-column:span 2;">
-        <h3 class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">Tickets por Estado</h3>
-        <div class="flex-1"><canvas id="c-est"></canvas></div>
-      </div>
-
-      <!-- KPI: Críticos -->
-      <div id="kpi-crit" class="card-glass glass-outline rounded-2xl p-5 flex flex-col justify-between"></div>
-
-      <!-- Issues table (tall) -->
-      <div class="card-glass glass-outline rounded-2xl p-5 flex flex-col" style="grid-row:span 2;">
-        <h3 class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3 flex items-center gap-2">
-          <span class="material-symbols-outlined text-tertiary text-[14px]">local_fire_department</span> Top Issues</h3>
-        <table class="w-full text-sm flex-1"><thead><tr class="text-left text-[10px] text-slate-500" style="border-bottom:1px solid rgba(64,72,93,0.3);">
-          <th class="pb-2">Cat.</th><th class="pb-2 text-right">#</th><th class="pb-2 text-right">%</th>
-        </tr></thead><tbody id="top-issues"></tbody></table>
-      </div>
-
-      <!-- Chart: Departamento (wide) -->
-      <div class="card-glass glass-outline rounded-2xl p-5 flex flex-col" style="grid-column:span 2;">
-        <h3 class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">Por Departamento</h3>
-        <div class="flex-1"><canvas id="c-dept"></canvas></div>
-      </div>
-
-      <!-- KPI: Desde Chat -->
-      <div id="kpi-chat" class="card-glass glass-outline rounded-2xl p-5 flex flex-col justify-between"></div>
+    <!-- Submit email -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:.9rem;font-size:.83rem;line-height:1.6;">
+      <strong>📧 Cómo entregar:</strong> Al finalizar las 2 horas, envía todo por email a
+      <a href="mailto:alastra@ternova.group" style="color:var(--accent2);">alastra@ternova.group</a>
     </div>
   </div>
-</section>
 
-<!-- KB PAGE -->
-<section id="p-kb" class="hidden px-8 py-6 fade">
-  <div class="flex items-center gap-3 mb-1">
-    <span class="material-symbols-outlined text-primary text-[28px]">menu_book</span>
-    <h1 class="text-xl font-bold tracking-tight font-headline text-on-surface">Base de Conocimiento</h1>
-  </div>
-  <p class="text-xs mt-1 mb-5 text-slate-400 ml-10">Artículos de soporte — base manual + auto-aprendizaje.</p>
-  <div class="relative mb-4">
-    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[18px]">search</span>
-    <input id="kb-search" oninput="renderKB()" placeholder="Buscar artículos…"
-           class="w-full dc-input pl-10 pr-4 py-2.5 text-sm">
-  </div>
-  <div class="grid grid-cols-3 gap-3 mb-5">
-    <div class="card-glass glass-outline px-4 py-3 text-center rounded-2xl">
-      <div class="text-2xl font-bold text-on-surface" id="kb-total">0</div>
-      <div class="text-xs mt-0.5 text-slate-400">Total artículos</div>
-    </div>
-    <div class="card-glass glass-outline px-4 py-3 text-center rounded-2xl">
-      <div class="text-2xl font-bold text-primary" id="kb-manual">0</div>
-      <div class="text-xs mt-0.5 text-slate-400 flex items-center justify-center gap-1">
-        <span class="material-symbols-outlined text-[14px]">auto_stories</span> Base manual</div>
-    </div>
-    <div class="card-glass glass-outline px-4 py-3 text-center rounded-2xl">
-      <div class="text-2xl font-bold text-tertiary" id="kb-learned">0</div>
-      <div class="text-xs mt-0.5 text-slate-400 flex items-center justify-center gap-1">
-        <span class="material-symbols-outlined text-[14px]">smart_toy</span> Aprendidos</div>
-    </div>
-  </div>
-  <div id="kb-list" class="space-y-3"></div>
-</section>
+  <!-- Documents download card -->
+  <div class="card">
+    <div class="section-tag">📁 Documentos del Caso</div>
+    <div class="section-title" style="margin-bottom:.3rem;">Descarga los archivos</div>
+    <div class="section-desc" style="margin-bottom:1.25rem;">Lee la transcripción primero, luego descarga el PRD que deberás completar.</div>
 
-<!-- CONFIG PAGE -->
-<section id="p-config" class="hidden px-8 py-6 fade max-w-2xl">
-  <div class="flex items-center gap-3 mb-6">
-    <span class="material-symbols-outlined text-primary text-[28px]">settings</span>
-    <h1 class="text-xl font-bold tracking-tight font-headline text-on-surface">Configuracion</h1>
-  </div>
-  <div class="card-glass glass-outline p-5 rounded-2xl">
-    <h3 class="font-semibold mb-1 flex items-center gap-2 text-on-surface">
-      <span class="material-symbols-outlined text-primary text-[20px]">smart_toy</span> API de OpenAI</h3>
-    <p class="text-xs mb-3 text-slate-400">Opcional. Sin API key el chat usa respuestas basadas en KB local.</p>
-    <input id="api-key" type="password" placeholder="sk-..." oninput="saveApiKey()"
-           class="w-full dc-input px-3 py-2 text-sm mb-2">
-    <div id="api-status" class="text-xs text-slate-500"></div>
-  </div>
-  <div class="mt-5 card-glass glass-outline p-5 rounded-2xl">
-    <h3 class="font-semibold mb-3 flex items-center gap-2 text-on-surface">
-      <span class="material-symbols-outlined text-secondary text-[20px]">architecture</span> Arquitectura</h3>
-    <div class="text-sm space-y-2 text-slate-400">
-      <div class="flex justify-between pb-2" style="border-bottom:1px solid rgba(64,72,93,0.2);"><span>UI</span><span class="font-medium text-on-surface">HTML + Tailwind CSS + Chart.js</span></div>
-      <div class="flex justify-between pb-2" style="border-bottom:1px solid rgba(64,72,93,0.2);"><span>Chat IA</span><span class="font-medium text-on-surface">OpenAI GPT-4o-mini (opcional)</span></div>
-      <div class="flex justify-between pb-2" style="border-bottom:1px solid rgba(64,72,93,0.2);"><span>Persistencia</span><span class="font-medium text-on-surface">localStorage (web) + SQLite (Streamlit)</span></div>
-      <div class="flex justify-between pb-2" style="border-bottom:1px solid rgba(64,72,93,0.2);"><span>Clasificacion</span><span class="font-medium text-on-surface">Keywords offline / GPT-4o-mini</span></div>
-      <div class="flex justify-between"><span>Deploy</span><span class="font-medium text-on-surface">Vercel (web) + Streamlit (full)</span></div>
+    <div style="display:flex;flex-direction:column;gap:.75rem;">
+      <a href="/CANDIDATO/01_TRANSCRIPCION_LLAMADA_CLIENTE.md" download
+         class="p2-download-btn">
+        <div class="p2-dl-icon">📝</div>
+        <div>
+          <div style="font-weight:600;font-size:.9rem;">Transcripción de Llamada con el Cliente</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:.15rem;">01_TRANSCRIPCION_LLAMADA_CLIENTE.md · Leer primero</div>
+        </div>
+        <div class="p2-dl-arrow">↓</div>
+      </a>
+
+      <a href="/CANDIDATO/02_PRD_INCOMPLETO.md" download
+         class="p2-download-btn">
+        <div class="p2-dl-icon">📋</div>
+        <div>
+          <div style="font-weight:600;font-size:.9rem;">PRD Incompleto — para completar</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:.15rem;">02_PRD_INCOMPLETO.md · Tu entregable principal</div>
+        </div>
+        <div class="p2-dl-arrow">↓</div>
+      </a>
+
+      <a href="/CANDIDATO/PRD_Sistema_Tickets_NovaTech.docx" download
+         class="p2-download-btn">
+        <div class="p2-dl-icon">📄</div>
+        <div>
+          <div style="font-weight:600;font-size:.9rem;">PRD en formato Word (.docx)</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:.15rem;">PRD_Sistema_Tickets_NovaTech.docx · Versión editable</div>
+        </div>
+        <div class="p2-dl-arrow">↓</div>
+      </a>
     </div>
   </div>
-</section>
+</div>
 
-</main>
+<style>
+/* ── Part 2 extras ── */
+.p2-info-row {
+  display: flex; align-items: flex-start; gap: .6rem;
+  font-size: .85rem; line-height: 1.5; padding: .35rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.p2-info-row:last-child { border-bottom: none; }
+
+.p2-phase-row {
+  display: flex; align-items: center; gap: .75rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: .65rem 1rem; font-size: .83rem;
+}
+.p2-phase-label { font-weight: 600; min-width: 140px; }
+.p2-phase-time  { color: var(--gold); font-weight: 700; min-width: 60px; }
+.p2-phase-del   { color: var(--muted); }
+
+.p2-deliverable {
+  display: flex; align-items: flex-start; gap: .85rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 9px; padding: .85rem 1rem;
+}
+.p2-del-num {
+  min-width: 28px; height: 28px; border-radius: 50%;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: .8rem; color: #fff; flex-shrink: 0;
+}
+
+.p2-rule {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: .6rem .85rem;
+}
+
+.p2-download-btn {
+  display: flex; align-items: center; gap: 1rem;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 1rem 1.25rem;
+  text-decoration: none; color: var(--text);
+  transition: border-color .15s, background .15s;
+}
+.p2-download-btn:hover { border-color: var(--accent); background: #1a1f36; }
+.p2-dl-icon { font-size: 1.6rem; flex-shrink: 0; }
+.p2-dl-arrow {
+  margin-left: auto; flex-shrink: 0;
+  font-size: 1.1rem; color: var(--accent2); font-weight: 700;
+}
+</style>
 
 <script>
-// ============================================================
-//  ICON HELPERS — safe DOM icon creation (no innerHTML)
-// ============================================================
-var CAT_ICONS = {
-  'Reset de Contraseñas': 'vpn_key',
-  'VPN / Conectividad': 'language',
-  'Software': 'computer',
-  'Permisos de Acceso': 'lock',
-  'Hardware': 'mouse',
-  'Impresoras': 'print',
-  'Servidor/Infraestructura': 'dns',
-  'RRHH - CONFIDENCIAL': 'shield',
-  'Otros': 'inventory_2'
-};
-
-function createIcon(name, size) {
-  var span = document.createElement('span');
-  span.className = 'material-symbols-outlined';
-  span.style.fontSize = (size || 14) + 'px';
-  span.style.verticalAlign = 'middle';
-  span.textContent = name;
-  return span;
-}
-
-// ============================================================
-//  STATE
-// ============================================================
-var tickets = JSON.parse(localStorage.getItem('nt_tickets') || '[]');
-var chatMsgs = JSON.parse(localStorage.getItem('nt_chat') || '[]');
-var charts = {};
-var PAGES = ['chat','tickets','dashboard','kb','config'];
-var PRI_ORDER = {'Crítica':0,'Alta':1,'Media':2,'Baja':3};
-
-// KB Articles
-var KB = [
-  { key:'contraseña', titulo:'Reset de Contraseña - Google Workspace', cat:'Reset de Contraseñas',
-    tags:['contraseña','password','acceso','correo','login','bloqueado'], source:'manual',
-    body:'Pasos:\n1. Ve a accounts.google.com\n2. Clic en ¿Olvidaste tu contraseña?\n3. Ingresa tu correo @novatech.com\n4. Selecciona método de recuperación\n5. Crea nueva contraseña (mín. 8 caracteres)\n\nSi no funciona: Tu cuenta puede estar bloqueada. Un agente la desbloqueará.\n\nTiempo estimado: 5 minutos'},
-  { key:'vpn', titulo:'Configuración y Troubleshooting de VPN', cat:'VPN / Conectividad',
-    tags:['vpn','conectividad','red','internet','wifi','timeout','home office'], source:'manual',
-    body:'1. Verifica tu internet\n2. Reinicia el cliente VPN\n3. Credenciales = Google Workspace\n4. Windows: Configuración > Red > VPN\n5. Mac: Preferencias > Red > VPN\n6. Reinicia tu equipo\n\nServidor: vpn.novatech.com | Tipo: IKEv2\n\nTiempo estimado: 10 minutos'},
-  { key:'software', titulo:'Instalación de Software Aprobado', cat:'Software',
-    tags:['software','instalar','programa','aplicación','app'], source:'manual',
-    body:'Sin aprobación: Chrome, Slack, Zoom, VS Code, Postman, Figma, Office 365, Notion, Docker\n\n1. Descarga del sitio oficial\n2. Ejecuta como administrador\n\nFuera de lista: Envía solicitud a soporte@novatech.com\n\nAprobación: 1-3 días'},
-  { key:'impresora', titulo:'Problemas Comunes de Impresora', cat:'Impresoras',
-    tags:['impresora','imprimir','impresión','escáner','papel','tóner'], source:'manual',
-    body:'1. Verifica que esté encendida y en red\n2. Reinicia Print Spooler (Windows) o elimina/re-agrega (Mac)\n3. Verifica papel y tóner\n4. Reinstala driver desde intranet\n\nTiempo estimado: 15 minutos'},
-  { key:'permisos', titulo:'Solicitud de Permisos de Acceso', cat:'Permisos de Acceso',
-    tags:['permiso','acceso','carpeta','drive','compartir','folder'], source:'manual',
-    body:'Google Drive: Pide al propietario que te comparta, o envía ticket con nombre de carpeta + jefe.\n\nSistemas internos: Requiere aprobación del director del área (1-2 días).\n\nPara accesos de emergencia, escala a Marcos Solís.'},
-  { key:'hardware', titulo:'Problemas de Hardware', cat:'Hardware',
-    tags:['mouse','teclado','monitor','pantalla','hardware','cable','cargador'], source:'manual',
-    body:'Mouse/Teclado: Cambia baterías, prueba otro puerto USB.\nMonitor: Verifica cables HDMI/DP, detectar pantalla en configuración.\nLaptop no carga: Prueba otro tomacorriente.\n\nPara reemplazo se requiere aprobación del director.'},
+// ── Encrypted candidate blobs ─────────────────────────────────────────────
+// Each: JSON({name, apellido}) encrypted with key = MASTER + '_' + APELLIDO
+const MASTER = 'alastra1408';
+const CANDIDATE_BLOBS = [
+  "U2FsdGVkX1/Sx0Q1A+1HPPcDsdZleJcFHpe1KVrtONIWdIVzBSynNajyKHdkgM9b7hZEjcZBRS4C4tmkjDDbfQ==",
+  "U2FsdGVkX1+txgQ84+HwH41pBSVpL6JbpljQCQ15pDUe9O/xak3k9v1uD8+y6F4tjTbI8tc6HcT5enqGL2IKzw==",
+  "U2FsdGVkX18zwCIDmjjCjK3ojZSopmE2eVB4JJUA0Dmzt+gg0gj8wmzWBxRo+b0An9BeD5FmsD2vfFKsuegjzoF+UKzB/keIC3Cgkl+G3Mw=",
+  "U2FsdGVkX1+gwCPWWbzOmVEbbTwa7MnuFUOBftmlwXCifSNqup2p2J659pcn5Sq4XJ7q24yK0/YuNxnaK1yB+w==",
+  "U2FsdGVkX194pvc4tPjn9YDJvtmovQaG1A/V/jHbaVe4x0NlTBWU+gnv4QjvnqK/J+iN0uq+CZPjDUzoaRT0bQ=="
 ];
 
-var SENS = ['acoso','hostigamiento','discriminación','denuncia','abuso','embarazo','despido','amenaza','violencia','sexual','intimidación','mobbing','represalia'];
-function isSensitive(t) { return SENS.some(function(k){return t.toLowerCase().includes(k);}); }
+// ── App state ─────────────────────────────────────────────────────────────
+let candidate = null;
+let answers = { A1:null, A2:null, A3:null, B1:null, B2:null, B3:[], B4:null, C1:'', C2:'', C3:'', D1:'', D2:'' };
+let timerInterval = null;
+let elapsedSecs = 0;
+let lastSection = 'A';
 
-function classify(text) {
-  var t = text.toLowerCase();
-  if (['servidor caído','producción caída','brecha','ransomware','hackearon'].some(function(k){return t.includes(k);}))
-    return {cat:'Servidor/Infraestructura',pri:'Crítica',conf:95,auto:false};
-  if (['contraseña','password','clave','no puedo entrar','bloqueado','login'].some(function(k){return t.includes(k);}))
-    return {cat:'Reset de Contraseñas',pri:'Baja',conf:90,auto:true,kb:'contraseña'};
-  if (['vpn','conectividad','red','internet','wifi','timeout','conexión'].some(function(k){return t.includes(k);}))
-    return {cat:'VPN / Conectividad',pri:'Media',conf:85,auto:true,kb:'vpn'};
-  if (['instalar','software','programa','aplicación','app','actualizar'].some(function(k){return t.includes(k);}))
-    return {cat:'Software',pri:'Media',conf:80,auto:true,kb:'software'};
-  if (['impresora','imprimir','impresión','escáner','scanner'].some(function(k){return t.includes(k);}))
-    return {cat:'Impresoras',pri:'Baja',conf:80,auto:true,kb:'impresora'};
-  if (['permiso','acceso','carpeta','drive','folder','compartir'].some(function(k){return t.includes(k);}))
-    return {cat:'Permisos de Acceso',pri:'Media',conf:80,auto:true,kb:'permisos'};
-  if (['mouse','teclado','monitor','pantalla','hardware','cable','cargador'].some(function(k){return t.includes(k);}))
-    return {cat:'Hardware',pri:'Baja',conf:85,auto:true,kb:'hardware'};
-  return {cat:'Otros',pri:'Media',conf:50,auto:false};
-}
-
-function searchKB(q) {
-  if (!q) return KB;
-  var words = q.toLowerCase().split(/\s+/);
-  return KB.filter(function(a) {
-    var text = (a.titulo+' '+a.tags.join(' ')+' '+a.body).toLowerCase();
-    return words.some(function(w){return text.includes(w);});
-  });
-}
-
-function save() {
-  localStorage.setItem('nt_tickets', JSON.stringify(tickets));
-  localStorage.setItem('nt_chat', JSON.stringify(chatMsgs));
-  updateSidebar();
-}
-
-function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-
-// ============================================================
-//  NAV
-// ============================================================
-function go(page) {
-  PAGES.forEach(function(p) {
-    document.getElementById('p-'+p).classList.toggle('hidden', p !== page);
-    document.querySelector('[data-nav="'+p+'"]').classList.toggle('active', p === page);
-  });
-  if (page === 'tickets') renderTickets();
-  if (page === 'dashboard') renderDashboard();
-  if (page === 'kb') renderKB();
-}
-
-// ============================================================
-//  CHAT
-// ============================================================
-function renderChat() {
-  var area = document.getElementById('chat-area');
-  var welcome = document.getElementById('chat-welcome');
-  if (!chatMsgs.length) { area.classList.add('hidden'); welcome.classList.remove('hidden'); return; }
-  welcome.classList.add('hidden'); area.classList.remove('hidden');
-  area.textContent = '';
-  chatMsgs.forEach(function(m) {
-    var row = document.createElement('div');
-    if (m.role === 'user') {
-      row.className = 'flex justify-end';
-      var wrap = document.createElement('div');
-      wrap.className = 'space-y-1 items-end flex flex-col max-w-[70%]';
-      var bubble = document.createElement('div');
-      bubble.className = 'chat-bubble-user px-4 py-3 text-sm leading-relaxed backdrop-blur-md';
-      bubble.style.cssText = 'background:rgba(138,76,252,0.15);border:1px solid rgba(189,157,255,0.3);color:#a67aff;';
-      bubble.textContent = m.content;
-      wrap.appendChild(bubble);
-      row.appendChild(wrap);
-    } else {
-      row.className = 'flex justify-start';
-      var wrap2 = document.createElement('div');
-      wrap2.className = 'flex gap-3 max-w-[70%]';
-      var avatar = document.createElement('div');
-      avatar.className = 'w-7 h-7 rounded-full bg-slate-800 flex-shrink-0 flex items-center justify-center border border-slate-700';
-      avatar.appendChild(createIcon('smart_toy', 14));
-      avatar.querySelector('.material-symbols-outlined').style.color = '#bd9dff';
-      var bubble2 = document.createElement('div');
-      bubble2.className = 'chat-bubble-ai px-4 py-3 text-sm leading-relaxed card-glass glass-outline text-on-surface';
-      bubble2.textContent = m.content;
-      wrap2.appendChild(avatar);
-      wrap2.appendChild(bubble2);
-      row.appendChild(wrap2);
-    }
-    area.appendChild(row);
-  });
-  area.scrollTop = area.scrollHeight;
-}
-
-function sendChat(e) {
-  e.preventDefault();
-  var input = document.getElementById('chat-input');
-  var text = input.value.trim();
-  if (!text) return;
-  input.value = '';
-
-  if (isSensitive(text)) {
-    chatMsgs.push({role:'user', content:text});
-    chatMsgs.push({role:'assistant', content:'Contenido confidencial detectado. Este caso ha sido derivado directamente a Recursos Humanos de forma confidencial. Ningún agente de TI tendrá acceso. El equipo de RRHH se pondrá en contacto contigo.'});
-    var tid = addTicket({remitente:'confidencial',asunto:'Caso RRHH',cuerpo:'[OCULTO]',cat:'RRHH - CONFIDENCIAL',pri:'Crítica',conf:99,estado:'Derivado a RRHH',sensible:true,origen:'chat'});
-    showBanner(tid, 'RRHH', 'Crítica');
-    save(); renderChat(); return;
-  }
-
-  chatMsgs.push({role:'user', content:text});
-  var relevant = searchKB(text);
-  var cl = classify(text);
-  var reply = '';
-  var needsTicket = false;
-
-  if (relevant.length && cl.auto) {
-    var a = relevant[0];
-    reply = 'Encontré información relevante:\n\n' + a.titulo + '\n\n' + a.body + '\n\n---\n¿Esto resolvió tu problema? Si no, puedo crear un ticket.';
-  } else if (cl.pri === 'Crítica') {
-    reply = 'Esto parece un incidente crítico. He creado un ticket de alta prioridad y notificado a Marcos Solís y Ricardo Méndez. Alguien te contactará en 15 minutos.';
-    needsTicket = true;
-  } else if (relevant.length) {
-    reply = 'Esto es lo que encontré:\n\n' + relevant[0].titulo + '\n\n' + relevant[0].body + '\n\n---\nSi necesitas ayuda adicional, puedo escalar a un agente.';
-  } else {
-    reply = 'No encontré una solución directa en nuestra base de conocimiento. He creado un ticket para que un agente de TI te ayude.';
-    needsTicket = true;
-  }
-  chatMsgs.push({role:'assistant', content:reply});
-
-  if (needsTicket) {
-    var estado = cl.pri === 'Crítica' ? 'Escalado a Marcos' : 'En cola';
-    var tid2 = addTicket({remitente:'chat@novatech.com',asunto:text.slice(0,70),cuerpo:text,cat:cl.cat,pri:cl.pri,conf:cl.conf,estado:estado,origen:'chat'});
-    showBanner(tid2, cl.cat, cl.pri);
-  }
-  save(); renderChat();
-}
-
-function showBanner(id, cat, pri) {
-  var b = document.getElementById('ticket-banner');
-  b.textContent = '';
-  b.appendChild(createIcon('confirmation_number', 14));
-  b.appendChild(document.createTextNode(' Ticket ' + id + ' creado · ' + cat + ' · ' + pri));
-  b.classList.remove('hidden');
-  setTimeout(function(){ b.classList.add('hidden'); }, 8000);
-}
-
-function resetChat() {
-  chatMsgs = []; save(); renderChat();
-  document.getElementById('ticket-banner').classList.add('hidden');
-}
-
-// ============================================================
-//  TICKETS
-// ============================================================
-function addTicket(o) {
-  var id = 'TK-' + String(tickets.length + 1).padStart(3, '0');
-  tickets.push({id:id, fecha:new Date().toLocaleString('es-MX'), sensible:false, auto:false, ...o});
-  if (o.estado && o.estado.includes('Auto')) tickets[tickets.length-1].auto = true;
-  save(); return id;
-}
-
-function toggleForm() { document.getElementById('new-ticket-form').classList.toggle('hidden'); }
-
-function createManualTicket() {
-  var e = document.getElementById('f-email').value;
-  var s = document.getElementById('f-subject').value;
-  var b = document.getElementById('f-body').value;
-  if (!e||!s||!b) { alert('Completa email, asunto y descripción.'); return; }
-  var cl = classify(s + ' ' + b);
-  var priOvr = document.getElementById('f-pri').value;
-  var pri = priOvr || cl.pri;
-  var estado = cl.auto ? 'Resuelto (Auto)' : (pri === 'Crítica' ? 'Escalado a Marcos' : 'En cola');
-  addTicket({remitente:e, departamento:document.getElementById('f-dept').value, oficina:document.getElementById('f-office').value, asunto:s, cuerpo:b, cat:cl.cat, pri:pri, conf:cl.conf, estado:estado, kb:cl.kb, origen:'manual'});
-  document.getElementById('f-email').value=''; document.getElementById('f-subject').value=''; document.getElementById('f-body').value='';
-  document.getElementById('new-ticket-form').classList.add('hidden');
-  renderTickets();
-}
-
-function renderTickets() {
-  var search = (document.getElementById('tk-search').value || '').toLowerCase();
-  var fPri = document.getElementById('flt-pri').value;
-  var fEst = document.getElementById('flt-est').value;
-  var fCat = document.getElementById('flt-cat').value;
-  var sort = document.getElementById('flt-sort').value;
-
-  var list = tickets.filter(function(t) {
-    if (search && !(t.asunto+' '+t.cuerpo+' '+(t.remitente||'')).toLowerCase().includes(search)) return false;
-    if (fPri && t.pri !== fPri) return false;
-    if (fEst && t.estado !== fEst) return false;
-    if (fCat && !(t.cat||'').includes(fCat)) return false;
-    return true;
-  });
-  if (sort === 'newest') list = list.slice().reverse();
-  if (sort === 'priHigh') list.sort(function(a,b){ return (PRI_ORDER[a.pri]||9) - (PRI_ORDER[b.pri]||9); });
-  if (sort === 'priLow')  list.sort(function(a,b){ return (PRI_ORDER[b.pri]||-1) - (PRI_ORDER[a.pri]||-1); });
-
-  document.getElementById('tk-count').textContent = list.length + ' tickets encontrados';
-  var el = document.getElementById('tk-list');
-  var empty = document.getElementById('tk-empty');
-  if (!list.length) { el.textContent = ''; empty.classList.remove('hidden'); return; }
-  empty.classList.add('hidden'); el.textContent = '';
-
-  list.forEach(function(t) {
-    var card = document.createElement('div');
-    card.className = 'tk-card card-glass glass-outline p-4 mb-3 rounded-2xl';
-
-    if (t.sensible) {
-      card.style.background = 'linear-gradient(180deg, rgba(167,1,56,0.15) 0%, rgba(167,1,56,0.08) 100%)';
-      var top = document.createElement('div'); top.className = 'flex justify-between items-center';
-      var idEl = document.createElement('span'); idEl.className = 'font-mono text-xs font-bold'; idEl.style.color = '#ff6e84'; idEl.textContent = t.id;
-      var badge = document.createElement('span'); badge.className = 'badge'; badge.style.background='rgba(167,1,56,0.2)'; badge.style.color='#ff6e84';
-      badge.appendChild(createIcon('shield', 12));
-      badge.appendChild(document.createTextNode(' CONFIDENCIAL'));
-      top.appendChild(idEl); top.appendChild(badge); card.appendChild(top);
-      var msg = document.createElement('p'); msg.className = 'text-sm mt-2'; msg.style.color='#ffb2b9'; msg.textContent = 'Contenido oculto — solo visible para RRHH';
-      card.appendChild(msg);
-      var dateEl = document.createElement('p'); dateEl.className = 'text-xs mt-1'; dateEl.style.color='rgba(255,178,185,0.5)'; dateEl.textContent = t.fecha;
-      card.appendChild(dateEl);
-    } else {
-      var hdr = document.createElement('div'); hdr.className = 'flex justify-between items-center mb-2';
-      var left = document.createElement('div'); left.className = 'flex items-center gap-2';
-
-      var idSpan = document.createElement('span'); idSpan.className = 'font-mono text-xs font-semibold text-slate-500'; idSpan.textContent = t.id;
-      left.appendChild(idSpan);
-
-      var priColors = {
-        'Crítica': {bg:'rgba(167,1,56,0.2)',   text:'#ff6e84'},
-        'Alta':    {bg:'rgba(255,134,195,0.15)', text:'#ff86c3'},
-        'Media':   {bg:'rgba(105,156,255,0.15)', text:'#699cff'},
-        'Baja':    {bg:'rgba(189,157,255,0.15)', text:'#bd9dff'},
-      };
-      var pC = priColors[t.pri] || {bg:'rgba(64,72,93,0.2)', text:'#a3aac4'};
-      var priBadge = document.createElement('span'); priBadge.className = 'badge'; priBadge.style.background=pC.bg; priBadge.style.color=pC.text; priBadge.textContent = t.pri;
-      left.appendChild(priBadge);
-
-      var catIconName = CAT_ICONS[t.cat] || 'inventory_2';
-      var catBadge = document.createElement('span'); catBadge.className = 'badge'; catBadge.style.background='rgba(64,72,93,0.2)'; catBadge.style.color='#a3aac4';
-      catBadge.appendChild(createIcon(catIconName, 12));
-      catBadge.appendChild(document.createTextNode(' ' + (t.cat || '—')));
-      left.appendChild(catBadge);
-
-      var originIconName = t.origen === 'chat' ? 'chat' : 'edit_note';
-      var originSpan = document.createElement('span'); originSpan.className = 'text-slate-500';
-      originSpan.appendChild(createIcon(originIconName, 14));
-      left.appendChild(originSpan);
-      hdr.appendChild(left);
-
-      var estColors = {
-        'Resuelto (Auto)':      {bg:'rgba(105,156,255,0.12)', text:'#699cff'},
-        'Escalado a Marcos':    {bg:'rgba(167,1,56,0.15)',    text:'#ff6e84'},
-        'Derivado a RRHH':      {bg:'rgba(255,134,195,0.12)', text:'#ff86c3'},
-        'Esperando aprobación': {bg:'rgba(189,157,255,0.12)', text:'#bd9dff'},
-        'En cola':              {bg:'rgba(105,156,255,0.1)',  text:'#699cff'},
-      };
-      var eC = estColors[t.estado] || {bg:'rgba(64,72,93,0.2)', text:'#a3aac4'};
-      var stBadge = document.createElement('span'); stBadge.className = 'badge'; stBadge.style.background=eC.bg; stBadge.style.color=eC.text; stBadge.textContent = t.estado;
-      hdr.appendChild(stBadge);
-      card.appendChild(hdr);
-
-      var title = document.createElement('h3'); title.className = 'font-semibold text-[14px] text-on-surface'; title.textContent = t.asunto;
-      card.appendChild(title);
-
-      var body = document.createElement('p'); body.className = 'text-sm mt-1 text-slate-400';
-      body.textContent = (t.cuerpo||'').slice(0,140) + ((t.cuerpo||'').length > 140 ? '…' : '');
-      card.appendChild(body);
-
-      var meta = document.createElement('div'); meta.className = 'flex gap-4 mt-2 text-xs text-slate-500';
-      meta.textContent = [t.remitente, t.departamento, t.oficina, t.fecha, 'IA: '+t.conf+'%'].filter(Boolean).join(' · ');
-      card.appendChild(meta);
-
-      if (t.auto && t.kb) {
-        var kbArt = KB.find(function(x){return x.key===t.kb;});
-        if (kbArt) {
-          var resp = document.createElement('div'); resp.className = 'mt-3 rounded-xl p-3'; resp.style.background='rgba(105,156,255,0.08)'; resp.style.border='1px solid rgba(105,156,255,0.2)';
-          var rTitle = document.createElement('p'); rTitle.className = 'text-xs font-semibold mb-1'; rTitle.style.color='#699cff';
-          rTitle.appendChild(createIcon('check_circle', 12));
-          rTitle.appendChild(document.createTextNode(' ' + kbArt.titulo));
-          resp.appendChild(rTitle);
-          var rBody = document.createElement('pre'); rBody.className = 'text-xs whitespace-pre-wrap font-[Inter] text-slate-400'; rBody.textContent = kbArt.body;
-          resp.appendChild(rBody);
-          card.appendChild(resp);
-        }
-      }
-    }
-    el.appendChild(card);
-  });
-}
-
-// ============================================================
-//  DASHBOARD
-// ============================================================
-function fillKPI(id, ico, val, lbl, color, delta) {
-  var d = document.getElementById(id); d.textContent = '';
-  d.style.borderLeft = '3px solid ' + color;
-  var iconEl = createIcon(ico, 28); iconEl.style.color = color;
-  d.appendChild(iconEl);
-  var mid = document.createElement('div'); mid.className = 'mt-auto';
-  var v = document.createElement('div'); v.className = 'text-3xl font-extrabold text-on-surface font-headline'; v.textContent = val; mid.appendChild(v);
-  var l = document.createElement('div'); l.className = 'text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-0.5'; l.textContent = lbl; mid.appendChild(l);
-  if (delta !== undefined) { var del = document.createElement('div'); del.className = 'text-xs font-semibold mt-1'; del.style.color='#699cff'; del.textContent = '\u25B2 ' + delta + '%'; mid.appendChild(del); }
-  d.appendChild(mid);
-}
-
-function renderDashboard() {
-  var total = tickets.length;
-  if (!total) { document.getElementById('dash-empty').classList.remove('hidden'); document.getElementById('dash-content').classList.add('hidden'); return; }
-  document.getElementById('dash-empty').classList.add('hidden'); document.getElementById('dash-content').classList.remove('hidden');
-
-  var autoRes = tickets.filter(function(t){return t.auto;}).length;
-  var sens    = tickets.filter(function(t){return t.sensible;}).length;
-  var escalados = total - autoRes - sens;
-  var criticos  = tickets.filter(function(t){return t.pri==='Crítica';}).length;
-  var fromChat  = tickets.filter(function(t){return t.origen==='chat';}).length;
-  var pct = total ? Math.round(autoRes/total*100) : 0;
-
-  // Fill KPI bento cells
-  fillKPI('kpi-total', 'confirmation_number', total, 'Total Tickets', '#bd9dff');
-  fillKPI('kpi-auto',  'smart_toy', autoRes, 'Auto-resueltos', '#699cff', pct);
-  fillKPI('kpi-esc',   'engineering', escalados, 'Escalados', '#ff86c3');
-  fillKPI('kpi-crit',  'error', criticos, 'Críticos', '#ff6e84');
-  fillKPI('kpi-chat',  'chat', fromChat, 'Desde Chat', '#a67aff');
-
-  // Resolution ring percentage
-  document.getElementById('ring-pct').textContent = pct + '%';
-
-  Object.values(charts).forEach(function(c){c.destroy();}); charts = {};
-
-  Chart.defaults.color = 'rgba(163,170,196,0.6)';
-  Chart.defaults.borderColor = 'rgba(64,72,93,0.3)';
-
-  // Resolution ring chart (mini doughnut)
-  charts.ring = new Chart(document.getElementById('c-ring'), {
-    type:'doughnut',
-    data:{labels:['Auto','Pendiente'],datasets:[{data:[autoRes, total-autoRes],backgroundColor:['#bd9dff','rgba(64,72,93,0.3)'],borderWidth:0}]},
-    options:{responsive:false,cutout:'75%',plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{animateRotate:true}}
-  });
-
-  // Categoría doughnut
-  var cats = {}; tickets.filter(function(t){return !t.sensible;}).forEach(function(t){cats[t.cat||'Otros']=(cats[t.cat||'Otros']||0)+1;});
-  charts.cat = new Chart(document.getElementById('c-cat'), {
-    type:'doughnut',
-    data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats),backgroundColor:['#bd9dff','#699cff','#ff86c3','#a67aff','#ff6e84','#f976ba','#a9c4ff','#6d758c'],borderWidth:2,borderColor:'rgba(6,14,32,0.8)'}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'right',labels:{font:{size:10,family:'Inter'},color:'rgba(163,170,196,0.8)',boxWidth:8,padding:8}}}}
-  });
-
-  // Estado bar chart
-  var ests = {}; tickets.forEach(function(t){ests[t.estado]=(ests[t.estado]||0)+1;});
-  var estColors = {'Resuelto (Auto)':'#699cff','Escalado a Marcos':'#ff6e84','En cola':'#bd9dff','Derivado a RRHH':'#ff86c3','Esperando aprobación':'#a67aff'};
-  charts.est = new Chart(document.getElementById('c-est'), {
-    type:'bar',
-    data:{labels:Object.keys(ests),datasets:[{data:Object.values(ests),backgroundColor:Object.keys(ests).map(function(k){return estColors[k]||'#6d758c';}),borderRadius:6}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{ticks:{font:{size:9}}}}}
-  });
-
-  // Top issues table
-  var tbody = document.getElementById('top-issues'); tbody.textContent = '';
-  Object.entries(cats).sort(function(a,b){return b[1]-a[1];}).forEach(function(pair) {
-    var tr = document.createElement('tr'); tr.style.borderBottom='1px solid rgba(64,72,93,0.2)';
-    var td1 = document.createElement('td'); td1.className = 'py-1.5 text-xs text-slate-400'; td1.textContent = pair[0];
-    var td2 = document.createElement('td'); td2.className = 'py-1.5 text-right font-semibold text-xs text-on-surface'; td2.textContent = pair[1];
-    var td3 = document.createElement('td'); td3.className = 'py-1.5 text-right text-xs text-slate-500'; td3.textContent = Math.round(pair[1]/total*100)+'%';
-    tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tbody.appendChild(tr);
-  });
-
-  // Departamento horizontal bar
-  var depts = {}; tickets.filter(function(t){return !t.sensible&&t.departamento;}).forEach(function(t){depts[t.departamento]=(depts[t.departamento]||0)+1;});
-  var deptSorted = Object.entries(depts).sort(function(a,b){return b[1]-a[1];});
-  charts.dept = new Chart(document.getElementById('c-dept'), {
-    type:'bar',
-    data:{labels:deptSorted.map(function(d){return d[0];}),datasets:[{data:deptSorted.map(function(d){return d[1];}),backgroundColor:'#bd9dff',borderRadius:6}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1}}}}
-  });
-}
-
-// ============================================================
-//  KB
-// ============================================================
-function renderKB() {
-  var q = (document.getElementById('kb-search').value || '').trim();
-  var arts = searchKB(q);
-  document.getElementById('kb-total').textContent = KB.length;
-  document.getElementById('kb-manual').textContent = KB.filter(function(a){return a.source==='manual';}).length;
-  document.getElementById('kb-learned').textContent = KB.filter(function(a){return a.source!=='manual';}).length;
-
-  var el = document.getElementById('kb-list'); el.textContent = '';
-  arts.forEach(function(a) {
-    var card = document.createElement('div'); card.className = 'tk-card card-glass glass-outline p-5 rounded-2xl';
-
-    var hdr = document.createElement('div'); hdr.className = 'flex justify-between items-start mb-3';
-    var info = document.createElement('div');
-    var h3 = document.createElement('h3'); h3.className = 'font-semibold text-[14px] text-on-surface'; h3.textContent = a.titulo; info.appendChild(h3);
-    var catIconName = CAT_ICONS[a.cat] || 'inventory_2';
-    var catP = document.createElement('p'); catP.className = 'text-xs mt-0.5 text-slate-500 flex items-center gap-1';
-    catP.appendChild(createIcon(catIconName, 12));
-    catP.appendChild(document.createTextNode(' ' + a.cat));
-    info.appendChild(catP);
-    hdr.appendChild(info);
-    var srcBadge = document.createElement('span'); srcBadge.className = 'badge';
-    if (a.source === 'manual') {
-      srcBadge.style.background='rgba(105,156,255,0.12)'; srcBadge.style.color='#699cff';
-      srcBadge.appendChild(createIcon('auto_stories', 12));
-      srcBadge.appendChild(document.createTextNode(' Base'));
-    } else {
-      srcBadge.style.background='rgba(189,157,255,0.12)'; srcBadge.style.color='#bd9dff';
-      srcBadge.appendChild(createIcon('smart_toy', 12));
-      srcBadge.appendChild(document.createTextNode(' Aprendido'));
-    }
-    hdr.appendChild(srcBadge);
-    card.appendChild(hdr);
-
-    var dc = document.createElement('div'); dc.className = 'h-px mb-3'; dc.style.background='rgba(64,72,93,0.3)'; card.appendChild(dc);
-
-    var pre = document.createElement('pre'); pre.className = 'text-sm whitespace-pre-wrap font-[Inter] leading-relaxed mb-3 text-slate-400'; pre.textContent = a.body;
-    card.appendChild(pre);
-
-    var tagsDiv = document.createElement('div'); tagsDiv.className = 'flex flex-wrap gap-1';
-    a.tags.forEach(function(t) {
-      var tag = document.createElement('span'); tag.className = 'inline-block rounded-full px-2 py-0.5 text-[10px]'; tag.style.background='rgba(64,72,93,0.25)'; tag.style.color='#a3aac4'; tag.textContent = t;
-      tagsDiv.appendChild(tag);
-    });
-    card.appendChild(tagsDiv);
-    el.appendChild(card);
-  });
-}
-
-// ============================================================
-//  CONFIG
-// ============================================================
-function saveApiKey() {
-  var key = document.getElementById('api-key').value;
-  localStorage.setItem('nt_apikey', key);
-  var badge = document.getElementById('ai-badge');
-  var status = document.getElementById('api-status');
-  if (key) {
-    badge.style.background = 'rgba(105,156,255,0.12)';
-    badge.style.color = '#699cff';
-    badge.textContent = '';
-    badge.appendChild(createIcon('smart_toy', 16));
-    badge.appendChild(document.createTextNode(' GPT-4o-mini activo'));
-    status.textContent = '';
-    status.appendChild(createIcon('check_circle', 12));
-    status.appendChild(document.createTextNode(' Modo IA activo'));
-    status.style.color = '#699cff';
-  } else {
-    badge.style.background = '';
-    badge.style.color = '';
-    badge.textContent = '';
-    badge.appendChild(createIcon('vpn_key', 16));
-    badge.appendChild(document.createTextNode(' Modo local (keywords)'));
-    status.textContent = 'Modo local — funcional para demo.';
-    status.style.color = '';
-  }
-}
-
-// ============================================================
-//  SIDEBAR
-// ============================================================
-function updateSidebar() {
-  var total = tickets.length;
-  var auto  = tickets.filter(function(t){return t.auto;}).length;
-  var crit  = tickets.filter(function(t){return t.pri==='Crítica';}).length;
-  var chat  = tickets.filter(function(t){return t.origen==='chat';}).length;
-  var pct   = total ? Math.round(auto/total*100) : 0;
-
-  var el = document.getElementById('sidebar-stats'); el.textContent = '';
-  [
-    ['Total tickets', total,           '#dee5ff'],
-    ['Auto-resueltos', auto+' ('+pct+'%)', '#699cff'],
-    ['Críticos',       crit,           '#ff6e84'],
-    ['Desde chat',     chat,           '#a67aff']
-  ].forEach(function(row) {
-    var d = document.createElement('div'); d.className = 'flex justify-between';
-    var lbl = document.createElement('span'); lbl.className = 'text-slate-500'; lbl.textContent = row[0]; d.appendChild(lbl);
-    var val = document.createElement('span'); val.className = 'font-semibold'; val.style.color=row[2]; val.textContent = row[1]; d.appendChild(val);
-    el.appendChild(d);
-  });
-}
-
-// ============================================================
-//  DEMO
-// ============================================================
-function loadDemo() {
-  if (tickets.length && !confirm('¿Reemplazar tickets actuales con datos demo?')) return;
-  tickets = [
-    {id:'TK-001',fecha:'04/04/2026 09:15',remitente:'carlos.ruiz@novatech.com',departamento:'Ventas',oficina:'Guadalajara',asunto:'No puedo entrar a mi correo',cuerpo:'Desde ayer no puedo acceder. Creo que olvidé mi contraseña.',cat:'Reset de Contraseñas',pri:'Baja',conf:92,estado:'Resuelto (Auto)',auto:true,kb:'contraseña',origen:'demo',sensible:false},
-    {id:'TK-002',fecha:'05/04/2026 10:30',remitente:'ana.lopez@novatech.com',departamento:'Administración',oficina:'Guadalajara',asunto:'La VPN no conecta desde casa',cuerpo:'Error de timeout al conectar a VPN.',cat:'VPN / Conectividad',pri:'Media',conf:88,estado:'Resuelto (Auto)',auto:true,kb:'vpn',origen:'demo',sensible:false},
-    {id:'TK-003',fecha:'06/04/2026 11:00',remitente:'roberto.diaz@novatech.com',departamento:'Desarrollo',oficina:'Monterrey',asunto:'Se cayó el servidor de staging',cuerpo:'No responde hace 30 min. Entrega mañana.',cat:'Servidor/Infraestructura',pri:'Crítica',conf:96,estado:'Escalado a Marcos',auto:false,origen:'demo',sensible:false},
-    {id:'TK-004',fecha:'06/04/2026 13:20',remitente:'laura.martinez@novatech.com',departamento:'Diseño',oficina:'Monterrey',asunto:'Necesito acceso a carpeta de assets',cuerpo:'Me cambiaron de proyecto y necesito acceso al Drive.',cat:'Permisos de Acceso',pri:'Media',conf:85,estado:'Esperando aprobación',auto:false,origen:'demo',sensible:false},
-    {id:'TK-005',fecha:'06/04/2026 14:45',remitente:'maria.garcia@novatech.com',departamento:'QA',oficina:'Monterrey',asunto:'Quiero instalar Postman',cuerpo:'Necesito Postman para testing de APIs.',cat:'Software',pri:'Baja',conf:90,estado:'Resuelto (Auto)',auto:true,kb:'software',origen:'demo',sensible:false},
-    {id:'TK-006',fecha:'06/04/2026 15:30',remitente:'anonimo@novatech.com',departamento:'—',oficina:'—',asunto:'Situación personal delicada',cuerpo:'[OCULTO POR PRIVACIDAD]',cat:'RRHH - CONFIDENCIAL',pri:'Crítica',conf:99,estado:'Derivado a RRHH',auto:false,origen:'demo',sensible:true},
-    {id:'TK-007',fecha:'06/04/2026 08:10',remitente:'pedro.sanchez@novatech.com',departamento:'Ventas',oficina:'Monterrey',asunto:'Mi mouse dejó de funcionar',cuerpo:'Mouse inalámbrico no responde, cambié pilas.',cat:'Hardware',pri:'Baja',conf:88,estado:'En cola',auto:false,origen:'demo',sensible:false},
-    {id:'TK-008',fecha:'06/04/2026 09:00',remitente:'sofia.torres@novatech.com',departamento:'Operaciones',oficina:'Monterrey',asunto:'Impresora del 3er piso no imprime',cuerpo:'Se quedan en cola de impresión.',cat:'Impresoras',pri:'Baja',conf:82,estado:'Resuelto (Auto)',auto:true,kb:'impresora',origen:'demo',sensible:false},
-  ];
-  save(); go('tickets');
-}
-
-// ============================================================
-//  INIT
-// ============================================================
-document.addEventListener('DOMContentLoaded', function() {
-  var savedKey = localStorage.getItem('nt_apikey') || '';
-  if (savedKey) { document.getElementById('api-key').value = savedKey; saveApiKey(); }
-  renderChat(); updateSidebar();
+// ── Login ─────────────────────────────────────────────────────────────────
+document.getElementById('apellido-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
 });
+
+function doLogin() {
+  const raw = document.getElementById('apellido-input').value;
+  // normalize: uppercase, strip accents
+  const norm = raw.trim().toUpperCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  let found = null;
+  for (const blob of CANDIDATE_BLOBS) {
+    try {
+      const key = MASTER + '_' + norm;
+      const bytes = CryptoJS.AES.decrypt(blob, key);
+      const plain = bytes.toString(CryptoJS.enc.Utf8);
+      if (plain && plain.startsWith('{')) {
+        const data = JSON.parse(plain);
+        if (data && data.apellido === norm) { found = data; break; }
+      }
+    } catch (_) { /* wrong key */ }
+  }
+
+  if (!found) {
+    const errEl = document.getElementById('login-error');
+    errEl.style.display = 'block';
+    document.getElementById('apellido-input').style.borderColor = 'var(--danger)';
+    return;
+  }
+
+  candidate = found;
+  document.getElementById('hdr-name').textContent = candidate.name;
+  showScreen('screen-exam');
+  showSection('A');
+  startTimer();
+}
+
+// ── Timer ─────────────────────────────────────────────────────────────────
+function startTimer() {
+  const total = 20 * 60;
+  const el = document.getElementById('timer');
+  timerInterval = setInterval(() => {
+    elapsedSecs++;
+    const rem = total - elapsedSecs;
+    const abs = Math.abs(rem);
+    const mm = String(Math.floor(abs / 60)).padStart(2,'0');
+    const ss = String(abs % 60).padStart(2,'0');
+    el.textContent = (rem < 0 ? '⏱ +' : '⏱ ') + mm + ':' + ss;
+    el.className = 'timer' + (rem < 0 ? ' danger' : rem < 300 ? ' warn' : '');
+  }, 1000);
+}
+
+function formatElapsed() {
+  return String(Math.floor(elapsedSecs/60)).padStart(2,'0') + ':' + String(elapsedSecs%60).padStart(2,'0');
+}
+
+// ── Screen navigation ─────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function showSection(sec) {
+  ['A','B','C','D'].forEach(s => {
+    document.getElementById('section-' + s).style.display = 'none';
+  });
+  document.getElementById('section-' + sec).style.display = 'block';
+  lastSection = sec;
+  updateProgress(sec);
+  window.scrollTo(0, 0);
+}
+
+function updateProgress(cur) {
+  const secs = ['A','B','C','D'];
+  const labels = ['A · Perfil','B · Automatización','C · IA Aplicada','D · Prompts'];
+  const idx = secs.indexOf(cur);
+  secs.forEach((s, i) => {
+    const step = document.getElementById('ps-' + i);
+    const lbl  = document.getElementById('pl-' + i);
+    step.className = 'progress-step' + (i < idx ? ' done' : i === idx ? ' current' : '');
+    lbl.className  = 'progress-label' + (i === idx ? ' active' : '');
+  });
+}
+
+// ── Option selection (event delegation) ───────────────────────────────────
+document.querySelectorAll('.options').forEach(container => {
+  container.addEventListener('click', e => {
+    const opt = e.target.closest('.option');
+    if (!opt) return;
+    const qid = opt.dataset.q;
+    const val = opt.dataset.v;
+    container.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    answers[qid] = val;
+  });
+});
+
+// ── Ranking B3 ────────────────────────────────────────────────────────────
+const B3_IDS = ['freq','errors','time','impact'];
+
+document.getElementById('rank-B3').addEventListener('click', e => {
+  const item = e.target.closest('.rank-item');
+  if (!item) return;
+  const id = item.id.replace('ritem-', '');
+  const badge = document.getElementById('rbadge-' + id);
+
+  if (answers.B3.includes(id)) {
+    // Deselect: remove from list, renumber
+    answers.B3 = answers.B3.filter(x => x !== id);
+    item.classList.remove('ranked');
+    badge.className = 'rank-badge empty';
+    badge.textContent = '';
+    // Renumber remaining
+    answers.B3.forEach((rid, i) => {
+      const b = document.getElementById('rbadge-' + rid);
+      b.textContent = i + 1;
+    });
+  } else {
+    // Select
+    answers.B3.push(id);
+    item.classList.add('ranked');
+    badge.className = 'rank-badge';
+    badge.textContent = answers.B3.length;
+  }
+});
+
+// ── Textarea sync ─────────────────────────────────────────────────────────
+function syncText(qid, min) {
+  const val = document.getElementById('ans-' + qid).value;
+  answers[qid] = val;
+  const len = val.trim().length;
+  const cc  = document.getElementById('cc-' + qid);
+  cc.textContent = len + ' / ' + min + ' caracteres mínimo';
+  cc.className = len >= min ? 'char-count ok' : 'char-count';
+}
+
+// ── Validation ────────────────────────────────────────────────────────────
+function isSectionDone(sec) {
+  if (sec === 'A') return !!(answers.A1 && answers.A2 && answers.A3);
+  if (sec === 'B') return !!(answers.B1 && answers.B2 && answers.B4 && answers.B3.length === 4);
+  if (sec === 'C') return answers.C1.trim().length >= 40 && answers.C2.trim().length >= 40 && answers.C3.trim().length >= 40;
+  if (sec === 'D') return answers.D1.trim().length >= 60 && answers.D2.trim().length >= 60;
+  return false;
+}
+
+function nextSection(from, to) {
+  if (!isSectionDone(from)) {
+    alert('Por favor completa todas las respuestas de esta sección antes de continuar.');
+    return;
+  }
+  showSection(to);
+}
+
+function goReview() {
+  if (!isSectionDone('D')) {
+    alert('Por favor completa todas las respuestas de la Sección D antes de continuar.');
+    return;
+  }
+  buildReview();
+  showScreen('screen-review');
+}
+
+function buildReview() {
+  const sections = [
+    { key:'A', label:'Sección A — Perfil Psicológico' },
+    { key:'B', label:'Sección B — Criterio de Automatización' },
+    { key:'C', label:'Sección C — IA Aplicada' },
+    { key:'D', label:'Sección D — Prompt Engineering' },
+  ];
+  const grid = document.getElementById('review-grid');
+  // Clear safely
+  while (grid.firstChild) grid.removeChild(grid.firstChild);
+
+  let allOk = true;
+  sections.forEach(s => {
+    const ok = isSectionDone(s.key);
+    if (!ok) allOk = false;
+
+    const row = document.createElement('div');
+    row.className = 'review-row';
+
+    const labelEl = document.createElement('span');
+    labelEl.className = 'review-section';
+    labelEl.textContent = s.label;
+
+    const statusEl = document.createElement('span');
+    statusEl.className = ok ? 'review-ok' : 'review-bad';
+    statusEl.textContent = ok ? '✓ Completa' : '✗ Incompleta';
+
+    row.appendChild(labelEl);
+    row.appendChild(statusEl);
+    grid.appendChild(row);
+  });
+
+  document.getElementById('review-warning').style.display = allOk ? 'none' : 'block';
+  document.getElementById('btn-submit').disabled = !allOk;
+}
+
+function backToExam() {
+  showScreen('screen-exam');
+  showSection(lastSection);
+}
+
+// ── Submit & Encrypt ──────────────────────────────────────────────────────
+function submitExam() {
+  clearInterval(timerInterval);
+  const payload = {
+    candidate: candidate.name,
+    apellido:  candidate.apellido,
+    timestamp: new Date().toISOString(),
+    elapsed:   formatElapsed(),
+    answers: {
+      A: { A1: answers.A1, A2: answers.A2, A3: answers.A3 },
+      B: { B1: answers.B1, B2: answers.B2, B3: answers.B3.join('>'), B4: answers.B4 },
+      C: { C1: answers.C1.trim(), C2: answers.C2.trim(), C3: answers.C3.trim() },
+      D: { D1: answers.D1.trim(), D2: answers.D2.trim() }
+    }
+  };
+
+  // Unique key per candidate so each ciphertext is different
+  const encKey = MASTER + '_' + candidate.apellido;
+  const cipher = CryptoJS.AES.encrypt(JSON.stringify(payload), encKey).toString();
+
+  document.getElementById('res-name').textContent = candidate.name;
+  document.getElementById('res-time').textContent =
+    'Tiempo: ' + formatElapsed() + ' · ' + new Date().toLocaleString('es-MX');
+  document.getElementById('cipher-output').textContent = cipher;
+
+  showScreen('screen-result');
+}
+
+// ── Copy cipher ───────────────────────────────────────────────────────────
+function copyCipher() {
+  const text = document.getElementById('cipher-output').textContent;
+  const showConfirm = () => {
+    const el = document.getElementById('copy-confirm');
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 3000);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(showConfirm).catch(fallbackCopy.bind(null, text, showConfirm));
+  } else {
+    fallbackCopy(text, showConfirm);
+  }
+}
+
+function fallbackCopy(text, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try { document.execCommand('copy'); } catch (_) {}
+  document.body.removeChild(ta);
+  cb();
+}
+
+// ── Part 2 ────────────────────────────────────────────────────────────────
+let p2TimerInterval = null;
+let p2ElapsedSecs = 0;
+const P2_TOTAL = 2 * 60 * 60; // 2 hours in seconds
+
+function goPart2Bridge() {
+  showScreen('screen-p2-bridge');
+}
+
+function startPart2() {
+  document.getElementById('p2-hdr-name').textContent = candidate ? candidate.name : '—';
+  showScreen('screen-part2');
+  startP2Timer();
+  window.scrollTo(0, 0);
+}
+
+function startP2Timer() {
+  if (p2TimerInterval) clearInterval(p2TimerInterval);
+  const el = document.getElementById('p2-timer');
+
+  p2TimerInterval = setInterval(() => {
+    p2ElapsedSecs++;
+    const rem = P2_TOTAL - p2ElapsedSecs;
+    const abs = Math.abs(rem);
+    const hh = String(Math.floor(abs / 3600)).padStart(1,'0');
+    const mm = String(Math.floor((abs % 3600) / 60)).padStart(2,'0');
+    const ss = String(abs % 60).padStart(2,'0');
+    const sign = rem < 0 ? '+' : '';
+    el.textContent = '⏱ ' + sign + hh + ':' + mm + ':' + ss;
+    el.className = 'timer' + (rem < 0 ? ' danger' : rem < 1800 ? ' warn' : '');
+
+    // Flash alert at time's up
+    if (rem === 0) {
+      alert('⏱ ¡Se acabó el tiempo! Detente y envía lo que tengas a alastra@ternova.group');
+    }
+  }, 1000);
+}
 </script>
 </body>
 </html>
